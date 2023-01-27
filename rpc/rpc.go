@@ -90,7 +90,7 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 	return rpcClient
 }
 
-func (r *RPCClient) GetWork() ([]string, error) {
+func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
 	rpcResp, err := r.doPost(r.Url, "eth_getWork", []string{})
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
 	return nil, nil
 }
 
-func (r *RPCClient) SubmitBlock(params []string) (bool, error) {
+func (r *RPCClient) SubmitBlock(params []string) (bool, error) { //ReceiveMinedHeader
 	rpcResp, err := r.doPost(r.Url, "eth_submitWork", params)
 	if err != nil {
 		return false, err
