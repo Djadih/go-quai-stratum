@@ -13,7 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron"
-	
+
 	"github.com/J-A-M-P-S/go-etcstratum/rpc"
 	"github.com/J-A-M-P-S/go-etcstratum/storage"
 	"github.com/J-A-M-P-S/go-etcstratum/util"

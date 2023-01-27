@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"log"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -113,7 +114,9 @@ func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
 }
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*GetBlockReply, error) {
+	log.Println(strconv.FormatInt(height, 5))
 	params := []interface{}{fmt.Sprintf("0x%x", height), true}
+	fmt.Println(params)
 	return r.getBlockBy("eth_getBlockByNumber", params)
 }
 
@@ -129,9 +132,11 @@ func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*Get
 
 func (r *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockReply, error) {
 	rpcResp, err := r.doPost(r.Url, method, params)
+	fmt.Println(r.Url)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("alive")
 	if rpcResp.Result != nil {
 		var reply *GetBlockReply
 		err = json.Unmarshal(*rpcResp.Result, &reply)
