@@ -272,11 +272,13 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 		return
 	}
 
+
 	current, err := u.rpc.GetPendingBlock()
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
 		log.Printf("Unable to get current blockchain height from node: %v", err)
+		log.Println("line 276")
 		return
 	}
 	currentHeight, err := strconv.ParseInt(strings.Replace(current.Number, "0x", "", -1), 16, 64)

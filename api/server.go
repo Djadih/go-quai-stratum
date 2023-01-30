@@ -17,6 +17,8 @@ import (
 	"github.com/J-A-M-P-S/go-etcstratum/rpc"
 	"github.com/J-A-M-P-S/go-etcstratum/storage"
 	"github.com/J-A-M-P-S/go-etcstratum/util"
+
+	"github.com/dominant-strategies/go-quai/common"
 )
 
 type ApiConfig struct {
@@ -47,7 +49,7 @@ type ApiServer struct {
 	minersMu            sync.RWMutex
 	statsIntv           time.Duration
 	rpc                 *rpc.RPCClient
-	genesisHash         string
+	genesisHash         common.Hash
 }
 
 type Entry struct {
@@ -61,6 +63,7 @@ func NewApiServer(cfg *ApiConfig, settings map[string]interface{}, backend *stor
 	rpc := rpc.NewRPCClient("BlockUnlocker", rpcDaemon, rpcTimeout)
 
 	block, err := rpc.GetBlockByHeight(0)
+	log.Println("Getting genesis block")
 	if err != nil || block == nil {
 		log.Fatalf("Error while retrieving genesis block from node: %v", err)
 	}
@@ -117,7 +120,7 @@ func (s *ApiServer) Start() {
 			}
 		}
 	}()
-	
+
 	go func() {
 		c := cron.New()
 

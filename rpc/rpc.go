@@ -13,9 +13,12 @@ import (
 	"sync"
 	"log"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/common/hexutil"	
+	"github.com/dominant-strategies/go-quai/core/types"
 
 	"github.com/J-A-M-P-S/go-etcstratum/util"
+
 )
 
 type RPCClient struct {
@@ -28,19 +31,42 @@ type RPCClient struct {
 	client      *http.Client
 }
 
+// type GetBlockReply struct {
+// 	Number       string   `json:"number"`
+// 	Hash         string   `json:"hash"`
+// 	Nonce        string   `json:"nonce"`
+// 	Miner        string   `json:"miner"`
+// 	Difficulty   string   `json:"difficulty"`
+// 	GasLimit     string   `json:"gasLimit"`
+// 	GasUsed      string   `json:"gasUsed"`
+// 	Timestamp    string   `json:"timestamp"`
+// 	Transactions []Tx     `json:"transactions"`
+// 	Uncles       []string `json:"uncles"`
+// 	// https://github.com/ethereum/EIPs/issues/95
+// 	SealFields []string `json:"sealFields"`
+// }
+
 type GetBlockReply struct {
-	Number       string   `json:"number"`
-	Hash         string   `json:"hash"`
-	Nonce        string   `json:"nonce"`
-	Miner        string   `json:"miner"`
-	Difficulty   string   `json:"difficulty"`
-	GasLimit     string   `json:"gasLimit"`
-	GasUsed      string   `json:"gasUsed"`
-	Timestamp    string   `json:"timestamp"`
-	Transactions []Tx     `json:"transactions"`
-	Uncles       []string `json:"uncles"`
-	// https://github.com/ethereum/EIPs/issues/95
-	SealFields []string `json:"sealFields"`
+	ParentHash    []common.Hash    `json:"parentHash"          gencodec:"required"`
+	UncleHash     []common.Hash    `json:"sha3Uncles"          gencodec:"required"`
+	Coinbase      []common.Address `json:"miner"               gencodec:"required"`
+	Root          []common.Hash    `json:"stateRoot"           gencodec:"required"`
+	TxHash        []common.Hash    `json:"transactionsRoot"    gencodec:"required"`
+	EtxHash       []common.Hash    `json:"extTransactionsRoot" gencodec:"required"`
+	EtxRollupHash []common.Hash    `json:"extRollupRoot"       gencodec:"required"`
+	ManifestHash  []common.Hash    `json:"manifestHash"        gencodec:"required"`
+	ReceiptHash   []common.Hash    `json:"receiptsRoot"        gencodec:"required"`
+	Bloom   	  []types.Bloom    `json:"logsBloom"           gencodec:"required"`
+	Difficulty    []*hexutil.Big   `json:"difficulty"          gencodec:"required"`
+	Number        []*hexutil.Big   `json:"number"              gencodec:"required"`
+	GasLimit      []hexutil.Uint64 `json:"gasLimit"            gencodec:"required"`
+	GasUsed       []hexutil.Uint64 `json:"gasUsed"             gencodec:"required"`
+	BaseFee       []*hexutil.Big   `json:"baseFeePerGas"       gencodec:"required"`
+	Location      common.Location  `json:"location"            gencodec:"required"`
+	Time          hexutil.Uint64   `json:"timestamp"           gencodec:"required"`
+	Extra         hexutil.Bytes    `json:"extraData"           gencodec:"required"`
+	Nonce         types.BlockNonce `json:"nonce"`
+	Hash          common.Hash      `json:"hash"`
 }
 
 type GetBlockReplyPart struct {
@@ -91,7 +117,7 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 }
 
 func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
-	rpcResp, err := r.doPost(r.Url, "eth_getWork", []string{})
+	rpcResp, err := r.doPost(r.Url, "quai_getPendingHeader", []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -101,10 +127,13 @@ func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
 }
 
 func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getBlockByNumber", []interface{}{"pending", false})
+	rpcResp, err := r.doPost(r.Url, "quai_getBlockByNumber", []interface{}{"pending", false})
+	fmt.Println("line 105")
+	fmt.Sprintf("%s", rpcResp.Result)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("line 109")
 	if rpcResp.Result != nil {
 		var reply *GetBlockReplyPart
 		err = json.Unmarshal(*rpcResp.Result, &reply)
@@ -114,10 +143,10 @@ func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
 }
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*GetBlockReply, error) {
-	log.Println(strconv.FormatInt(height, 5))
 	params := []interface{}{fmt.Sprintf("0x%x", height), true}
-	fmt.Println(params)
-	return r.getBlockBy("eth_getBlockByNumber", params)
+	log.Print("GetBlockByHeight params ")
+	log.Println(params)
+	return r.getBlockBy("quai_getBlockByNumber", params)
 }
 
 func (r *RPCClient) GetBlockByHash(hash string) (*GetBlockReply, error) {
@@ -130,13 +159,14 @@ func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*Get
 	return r.getBlockBy("eth_getUncleByBlockNumberAndIndex", params)
 }
 
+// The most important function for now.
 func (r *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockReply, error) {
 	rpcResp, err := r.doPost(r.Url, method, params)
 	fmt.Println(r.Url)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("alive")
+	fmt.Println(string(*rpcResp.Result))
 	if rpcResp.Result != nil {
 		var reply *GetBlockReply
 		err = json.Unmarshal(*rpcResp.Result, &reply)
