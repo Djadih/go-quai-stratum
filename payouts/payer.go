@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/dominant-strategies/go-quai/common/hexutil"
 
 	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/Djadih/go-quai-stratum/storage"

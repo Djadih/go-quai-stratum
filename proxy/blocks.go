@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/dominant-strategies/go-quai/common"
 
 	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/Djadih/go-quai-stratum/util"
