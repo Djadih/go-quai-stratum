@@ -1,11 +1,12 @@
 package payouts
 
 import (
-	"github.com/J-A-M-P-S/go-etcstratum/rpc"
-	"github.com/J-A-M-P-S/go-etcstratum/storage"
 	"math/big"
 	"os"
 	"testing"
+
+	"github.com/Djadih/go-quai-stratum/rpc"
+	"github.com/Djadih/go-quai-stratum/storage"
 )
 
 func TestMain(m *testing.M) {

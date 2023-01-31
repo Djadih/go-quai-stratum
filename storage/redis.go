@@ -11,7 +11,7 @@ import (
 
 	"gopkg.in/redis.v3"
 
-	"github.com/J-A-M-P-S/go-etcstratum/util"
+	"github.com/Djadih/go-quai-stratum/util"
 )
 
 type Config struct {
@@ -204,7 +204,7 @@ func convertPoolChartsResults(raw *redis.ZSliceCmd) []*PoolCharts {
 	}
 	var reverse []*PoolCharts
 	for i := len(result) - 1; i >= 0; i-- {
-		reverse = append(reverse, result[i]);
+		reverse = append(reverse, result[i])
 	}
 	return reverse
 }
@@ -224,7 +224,7 @@ func convertMinerChartsResults(raw *redis.ZSliceCmd) []*MinerCharts {
 	}
 	var reverse []*MinerCharts
 	for i := len(result) - 1; i >= 0; i-- {
-		reverse = append(reverse, result[i]);
+		reverse = append(reverse, result[i])
 	}
 	return reverse
 }
@@ -329,9 +329,9 @@ func (r *RedisClient) GetNodeStates() ([]map[string]interface{}, error) {
 
 func (r *RedisClient) checkPoWExist(height uint64, params []string) (bool, error) {
 	r.client.ZRemRangeByScore(r.formatKey("pow"), "-inf", fmt.Sprint("(", height-8))
-	
+
 	fmt.Println(strings.Join(params, ":"))
-	
+
 	val, err := r.client.ZAdd(r.formatKey("pow"), redis.Z{Score: float64(height), Member: strings.Join(params, ":")}).Result()
 	return val == 0, err
 }
@@ -1243,7 +1243,7 @@ func convertPaymentChartsResults(raw *redis.ZSliceCmd) []*PaymentCharts {
 	}
 	var reverse []*PaymentCharts
 	for i := len(result) - 1; i >= 0; i-- {
-		reverse = append(reverse, result[i]);
+		reverse = append(reverse, result[i])
 	}
 	return reverse
 }

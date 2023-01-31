@@ -9,13 +9,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/yvasiyarov/gorelic"
 	"github.com/J-A-M-P-S/structs"
 
-	"github.com/J-A-M-P-S/go-etcstratum/api"
-	"github.com/J-A-M-P-S/go-etcstratum/payouts"
-	"github.com/J-A-M-P-S/go-etcstratum/proxy"
-	"github.com/J-A-M-P-S/go-etcstratum/storage"
+	"github.com/Djadih/go-quai-stratum/api"
+	"github.com/Djadih/go-quai-stratum/proxy"
+	"github.com/Djadih/go-quai-stratum/storage"
 )
 
 var cfg proxy.Config

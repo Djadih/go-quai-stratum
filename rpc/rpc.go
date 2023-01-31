@@ -6,19 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
-	"log"
 
 	"github.com/dominant-strategies/go-quai/common"
-	"github.com/dominant-strategies/go-quai/common/hexutil"	
+	"github.com/dominant-strategies/go-quai/common/hexutil"
 	"github.com/dominant-strategies/go-quai/core/types"
 
-	"github.com/J-A-M-P-S/go-etcstratum/util"
-
+	"github.com/Djadih/go-quai-stratum/util"
 )
 
 type RPCClient struct {
@@ -56,7 +55,7 @@ type GetBlockReply struct {
 	EtxRollupHash []common.Hash    `json:"extRollupRoot"       gencodec:"required"`
 	ManifestHash  []common.Hash    `json:"manifestHash"        gencodec:"required"`
 	ReceiptHash   []common.Hash    `json:"receiptsRoot"        gencodec:"required"`
-	Bloom   	  []types.Bloom    `json:"logsBloom"           gencodec:"required"`
+	Bloom         []types.Bloom    `json:"logsBloom"           gencodec:"required"`
 	Difficulty    []*hexutil.Big   `json:"difficulty"          gencodec:"required"`
 	Number        []*hexutil.Big   `json:"number"              gencodec:"required"`
 	GasLimit      []hexutil.Uint64 `json:"gasLimit"            gencodec:"required"`

@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/J-A-M-P-S/go-etcstratum/util"
+	"github.com/Djadih/go-quai-stratum/util"
 )
 
 const (

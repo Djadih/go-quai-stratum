@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/J-A-M-P-S/go-etcstratum/rpc"
-	"github.com/J-A-M-P-S/go-etcstratum/storage"
-	"github.com/J-A-M-P-S/go-etcstratum/util"
+	"github.com/Djadih/go-quai-stratum/rpc"
+	"github.com/Djadih/go-quai-stratum/storage"
+	"github.com/Djadih/go-quai-stratum/util"
 )
 
 const txCheckInterval = 5 * time.Second

@@ -1,10 +1,9 @@
 package proxy
 
 import (
-	"github.com/J-A-M-P-S/go-etcstratum/api"
-	"github.com/J-A-M-P-S/go-etcstratum/payouts"
-	"github.com/J-A-M-P-S/go-etcstratum/policy"
-	"github.com/J-A-M-P-S/go-etcstratum/storage"
+	"github.com/Djadih/go-quai-stratum/api"
+	"github.com/Djadih/go-quai-stratum/policy"
+	"github.com/Djadih/go-quai-stratum/storage"
 )
 
 type Config struct {
@@ -22,7 +21,7 @@ type Config struct {
 
 	// BlockUnlocker payouts.UnlockerConfig `json:"unlocker"`
 	// Payouts       payouts.PayoutsConfig  `json:"payouts"`
-	
+
 	AvgBlockTime    float64 `json:"avgBlockTime"`
 	BlockTimeWindow int64   `json:"blockTimeWindow"`
 
