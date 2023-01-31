@@ -33,24 +33,25 @@ func startApi() {
 }
 
 func startBlockUnlocker() {
-	u := payouts.NewBlockUnlocker(&cfg.BlockUnlocker, backend, &cfg.Network)
-	u.Start()
+	// u := payouts.NewBlockUnlocker(&cfg.BlockUnlocker, backend, &cfg.Network)
+	// u.Start()
 }
 
 func startPayoutsProcessor() {
-	u := payouts.NewPayoutsProcessor(&cfg.Payouts, backend)
-	u.Start()
+	// u := payouts.NewPayoutsProcessor(&cfg.Payouts, backend)
+	// u.Start()
 }
 
-func startNewrelic() {
-	if cfg.NewrelicEnabled {
-		nr := gorelic.NewAgent()
-		nr.Verbose = cfg.NewrelicVerbose
-		nr.NewrelicLicense = cfg.NewrelicKey
-		nr.NewrelicName = cfg.NewrelicName
-		nr.Run()
-	}
-}
+// func startNewrelic() {
+// 	if cfg.NewrelicEnabled {
+// 		nr := newrelic.NewContext()
+//			nr := gorelic.NewAgent()
+// 		nr.Verbose = cfg.NewrelicVerbose
+// 		nr.NewrelicLicense = cfg.NewrelicKey
+// 		nr.NewrelicName = cfg.NewrelicName
+// 		nr.Run()
+// 	}
+// }
 
 func readConfig(cfg *proxy.Config) {
 	configFileName := "config.json"
@@ -80,7 +81,7 @@ func main() {
 		log.Printf("Running with %v threads", cfg.Threads)
 	}
 
-	startNewrelic()
+	// startNewrelic()
 
 	backend = storage.NewRedisClient(&cfg.Redis, cfg.Coin)
 	pong, err := backend.Check()
@@ -96,12 +97,12 @@ func main() {
 	if cfg.Api.Enabled {
 		go startApi()
 	}
-	if cfg.BlockUnlocker.Enabled {
-		go startBlockUnlocker()
-	}
-	if cfg.Payouts.Enabled {
-		go startPayoutsProcessor()
-	}
+	// if cfg.BlockUnlocker.Enabled {
+	// 	go startBlockUnlocker()
+	// }
+	// if cfg.Payouts.Enabled {
+	// 	go startPayoutsProcessor()
+	// }
 	quit := make(chan bool)
 	<-quit
 }

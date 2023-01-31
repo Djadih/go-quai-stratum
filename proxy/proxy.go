@@ -131,9 +131,9 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 							log.Printf("Error while retrieving block from node: %v", err)
 							proxy.markSick()
 						} else {
-							timestamp, _ := strconv.ParseInt(strings.Replace(block.Timestamp, "0x", "", -1), 16, 64)
+							timestamp, _ := strconv.ParseInt(strings.Replace(block.Time.String(), "0x", "", -1), 16, 64)
 							prevblock, _ := rpc.GetBlockByHeight(prev)
-							prevtime, _ := strconv.ParseInt(strings.Replace(prevblock.Timestamp, "0x", "", -1), 16, 64)
+							prevtime, _ := strconv.ParseInt(strings.Replace(prevblock.Time.String(), "0x", "", -1), 16, 64)
 							blocktime := float64(timestamp-prevtime) / float64(n)
 							err = backend.WriteNodeState(cfg.Name, t.Height, t.Difficulty, blocktime)
 							if err != nil {
