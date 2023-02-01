@@ -1,36 +1,20 @@
 package proxy
 
-import (
+/*import (
 	"log"
 	"math/big"
 	"strconv"
-	"strings"
 
-	"github.com/etclabscore/go-etchash"
-	"github.com/dominant-strategies/go-quai/common"
-)
+	"github.com/ethereum/go-ethereum/common"
+)*/
 
-var ecip1099FBlockClassic uint64 = 11700000 // classic mainnet
-var ecip1099FBlockMordor uint64 = 2520000   // mordor
-
-var hasher *etchash.Etchash = nil
+//var hasher *blake3pow.Blake3pow = nil
 
 func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, params []string) (bool, bool) {
-	if hasher == nil {
-		if s.config.Network == "classic" {
-			hasher = etchash.New(&ecip1099FBlockClassic, nil)
-		} else if s.config.Network == "mordor" {
-			hasher = etchash.New(&ecip1099FBlockMordor, nil)
-		} else {
-			// unknown network
-			log.Printf("Unknown network configuration %s", s.config.Network)
-			return false, false
-		}
-	}
-	nonceHex := params[0]
+
+	/*nonceHex := params[0]
 	hashNoNonce := params[1]
-	mixDigest := params[2]
-	nonce, _ := strconv.ParseUint(strings.Replace(nonceHex, "0x", "", -1), 16, 64)
+	nonce, _ := strconv.ParseUint(nonceHex, 16, 64)
 	shareDiff := s.config.Proxy.Difficulty
 
 	h, ok := t.headers[hashNoNonce]
@@ -44,7 +28,6 @@ func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, param
 		hashNoNonce: common.HexToHash(hashNoNonce),
 		difficulty:  big.NewInt(shareDiff),
 		nonce:       nonce,
-		mixDigest:   common.HexToHash(mixDigest),
 	}
 
 	block := Block{
@@ -52,15 +35,14 @@ func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, param
 		hashNoNonce: common.HexToHash(hashNoNonce),
 		difficulty:  h.diff,
 		nonce:       nonce,
-		mixDigest:   common.HexToHash(mixDigest),
 	}
 
-	if !hasher.Verify(share) {
+	/*if !hasher.Verify(share) {
 		return false, false
 	}
 
 	if hasher.Verify(block) {
-		ok, err := s.rpc().SubmitBlock(params)
+		ok, err := s.rpc().ReceiveMinedHeader(params)
 		if err != nil {
 			log.Printf("Block submission failure at height %v for %v: %v", h.height, t.Header, err)
 		} else if !ok {
@@ -87,6 +69,6 @@ func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, param
 		if err != nil {
 			log.Println("Failed to insert share data into backend:", err)
 		}
-	}
+	}*/
 	return false, true
 }

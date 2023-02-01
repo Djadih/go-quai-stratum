@@ -276,7 +276,7 @@ func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcRe
 			break
 		}
 		cs.sendResult(req.Id, &reply)
-	case "eth_submitWork":
+	case "quai_receiveMinedHeader":
 		if req.Params != nil {
 			var params []string
 			err := json.Unmarshal(req.Params, &params)

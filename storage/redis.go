@@ -66,7 +66,6 @@ type BlockData struct {
 	Hash           string   `json:"hash"`
 	Nonce          string   `json:"-"`
 	PowHash        string   `json:"-"`
-	MixDigest      string   `json:"-"`
 	Reward         *big.Int `json:"-"`
 	ExtraReward    *big.Int `json:"-"`
 	ImmatureReward string   `json:"-"`
@@ -1042,7 +1041,6 @@ func convertCandidateResults(raw *redis.ZSliceCmd) []*BlockData {
 		fields := strings.Split(v.Member.(string), ":")
 		block.Nonce = fields[0]
 		block.PowHash = fields[1]
-		block.MixDigest = fields[2]
 		block.Timestamp, _ = strconv.ParseInt(fields[3], 10, 64)
 		block.Difficulty, _ = strconv.ParseInt(fields[4], 10, 64)
 		block.TotalShares, _ = strconv.ParseInt(fields[5], 10, 64)

@@ -36,14 +36,12 @@ type Block struct {
 	difficulty  *big.Int
 	hashNoNonce common.Hash
 	nonce       uint64
-	mixDigest   common.Hash
 	number      uint64
 }
 
 func (b Block) Difficulty() *big.Int     { return b.difficulty }
 func (b Block) HashNoNonce() common.Hash { return b.hashNoNonce }
 func (b Block) Nonce() uint64            { return b.nonce }
-func (b Block) MixDigest() common.Hash   { return b.mixDigest }
 func (b Block) NumberU64() uint64        { return b.number }
 
 func (s *ProxyServer) fetchBlockTemplate() {
@@ -103,7 +101,7 @@ func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64
 		log.Printf("Error while refreshing pending block on %s: %s", rpc.Name, err)
 		return nil, 0, 0, err
 	}
-	blockNumber, err := strconv.ParseUint(strings.Replace(reply.Number, "0x", "", -1), 16, 64)
+	blockNumber, err := strconv.ParseUint(reply.Number, 16, 64)
 	if err != nil {
 		log.Println("Can't parse pending block number")
 		return nil, 0, 0, err

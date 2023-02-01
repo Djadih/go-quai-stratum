@@ -120,7 +120,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 			return cs.sendTCPError(req.Id, errReply)
 		}
 		return cs.sendTCPResult(req.Id, &reply)
-	case "eth_submitWork":
+	case "quai_receiveMinedHeader":
 		var params []string
 		err := json.Unmarshal(req.Params, &params)
 		if err != nil {
