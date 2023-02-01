@@ -128,10 +128,10 @@ func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
 func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
 	rpcResp, err := r.doPost(r.Url, "quai_getBlockByNumber", []interface{}{"pending", false})
 	fmt.Println("line 105")
-	fmt.Sprintf("%s", rpcResp.Result)
 	if err != nil {
 		return nil, err
 	}
+	log.Print(rpcResp.Result)
 	log.Println("line 109")
 	if rpcResp.Result != nil {
 		var reply *GetBlockReplyPart

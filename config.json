@@ -8,7 +8,7 @@
 	"blockTimeWindow": 300,
 
 	"proxy": {
-		"enabled": false,
+		"enabled": true,
 		"listen": "0.0.0.0:8888",
 		"limitHeadersSize": 1024,
 		"limitBodySize": 256,
@@ -79,7 +79,7 @@
 	"upstream": [
 		{
 			"name": "main",
-			"url": "http://127.0.0.1:5611",
+			"url": "http://127.0.0.1:8678",
 			"timeout": "10s"
 		}
 	],

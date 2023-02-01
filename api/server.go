@@ -60,7 +60,7 @@ type Entry struct {
 func NewApiServer(cfg *ApiConfig, settings map[string]interface{}, backend *storage.RedisClient) *ApiServer {
 	log.Println(settings)
 	// rpcDaemon := settings["BlockUnlocker"].(map[string]interface{})["Daemon"].(string)
-	rpcDaemon := "http://127.0.0.1:8610"
+	rpcDaemon := "http://127.0.0.1:8678"
 	// rpcTimeout := settings["BlockUnlocker"].(map[string]interface{})["Timeout"].(string)
 	rpcTimeout := "10s"
 	rpc := rpc.NewRPCClient("BlockUnlocker", rpcDaemon, rpcTimeout)
