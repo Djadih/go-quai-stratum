@@ -2,6 +2,8 @@ module github.com/Djadih/go-quai-stratum
 
 go 1.16
 
+replace github.com/dominant-strategies/go-quai => ../../dominant-strategies/go-quai
+
 require (
 	github.com/J-A-M-P-S/structs v1.1.0
 	github.com/btcsuite/btcd v0.21.0-beta // indirect

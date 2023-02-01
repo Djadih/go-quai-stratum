@@ -70,6 +70,10 @@ func readConfig(cfg *proxy.Config) {
 	}
 }
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
 func main() {
 	readConfig(&cfg)
 	rand.Seed(time.Now().UnixNano())

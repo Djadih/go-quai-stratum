@@ -11,6 +11,7 @@ import (
 
 	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai/common/hexutil"
 )
 
 const maxBacklog = 3
@@ -33,13 +34,13 @@ type BlockTemplate struct {
 }
 
 type Block struct {
-	difficulty  *big.Int
+	difficulty  []*hexutil.Big
 	hashNoNonce common.Hash
 	nonce       uint64
 	number      uint64
 }
 
-func (b Block) Difficulty() *big.Int     { return b.difficulty }
+func (b Block) Difficulty() []*hexutil.Big     { return b.difficulty }
 func (b Block) HashNoNonce() common.Hash { return b.hashNoNonce }
 func (b Block) Nonce() uint64            { return b.nonce }
 func (b Block) NumberU64() uint64        { return b.number }
@@ -62,14 +63,23 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		return
 	}
 
-	pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
+	// pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
+	for _,s := range s.config.Proxy.Difficulty {
+		log.Println(s)
+	}
+	pendingReply.Difficulty = []string{"5","6"}
+	// pendingReply.Difficulty = hexutil.EncodeBig(s.config.Proxy.Difficulty)
+
+	// for i,s := range diff {
+
+	// }
 
 	newTemplate := BlockTemplate{
 		Header:               reply[0],
 		Seed:                 reply[1],
 		Target:               reply[2],
 		Height:               height,
-		Difficulty:           big.NewInt(diff),
+		Difficulty:           big.NewInt(diff[0]),
 		GetPendingBlockCache: pendingReply,
 		headers:              make(map[string]heightDiffPair),
 	}
@@ -94,22 +104,30 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 }
 
-func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64, error) {
+func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, []int64, error) {
 	rpc := s.rpc()
 	reply, err := rpc.GetPendingBlock()
 	if err != nil {
 		log.Printf("Error while refreshing pending block on %s: %s", rpc.Name, err)
-		return nil, 0, 0, err
+		return nil, 0, []int64{0}, err
 	}
 	blockNumber, err := strconv.ParseUint(reply.Number, 16, 64)
 	if err != nil {
 		log.Println("Can't parse pending block number")
-		return nil, 0, 0, err
+		return nil, 0, []int64{0}, err
 	}
-	blockDiff, err := strconv.ParseInt(strings.Replace(reply.Difficulty, "0x", "", -1), 16, 64)
-	if err != nil {
-		log.Println("Can't parse pending block difficulty")
-		return nil, 0, 0, err
+	// blockDiff, err := strconv.ParseInt(strings.Replace(reply.Difficulty, "0x", "", -1), 16, 64)
+	// blockDiff := []string{}
+	var blockDiff []int64
+	for _,s := range reply.Difficulty {
+		// blockDiff = append(blockDiff, )
+		num, err := strconv.ParseInt(strings.Replace(s, "0x", "", -1), 16, 64)
+		blockDiff = append(blockDiff, num)
+		if err != nil {
+			log.Println("Can't parse pending block difficulty")
+			return nil, 0, []int64{0}, err
+		}
 	}
+
 	return reply, blockNumber, blockDiff, nil
 }

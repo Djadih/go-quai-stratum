@@ -70,7 +70,7 @@ type GetBlockReply struct {
 
 type GetBlockReplyPart struct {
 	Number     string `json:"number"`
-	Difficulty string `json:"difficulty"`
+	Difficulty []string `json:"difficulty"`
 }
 
 const receiptStatusSuccessful = "0x1"
@@ -127,12 +127,10 @@ func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
 
 func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
 	rpcResp, err := r.doPost(r.Url, "quai_getBlockByNumber", []interface{}{"pending", false})
-	fmt.Println("line 105")
 	if err != nil {
 		return nil, err
 	}
-	log.Print(rpcResp.Result)
-	log.Println("line 109")
+	// log.Print(rpcResp.Result)
 	if rpcResp.Result != nil {
 		var reply *GetBlockReplyPart
 		err = json.Unmarshal(*rpcResp.Result, &reply)

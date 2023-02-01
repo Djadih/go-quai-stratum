@@ -4,6 +4,7 @@ import (
 	"github.com/Djadih/go-quai-stratum/api"
 	"github.com/Djadih/go-quai-stratum/policy"
 	"github.com/Djadih/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai/common/hexutil"
 )
 
 type Config struct {
@@ -38,7 +39,7 @@ type Proxy struct {
 	LimitBodySize        int64  `json:"limitBodySize"`
 	BehindReverseProxy   bool   `json:"behindReverseProxy"`
 	BlockRefreshInterval string `json:"blockRefreshInterval"`
-	Difficulty           int64  `json:"difficulty"`
+	Difficulty           []*hexutil.Big  `json:"difficulty"`
 	StateUpdateInterval  string `json:"stateUpdateInterval"`
 	HashrateExpiration   string `json:"hashrateExpiration"`
 
