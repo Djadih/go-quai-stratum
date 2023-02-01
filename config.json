@@ -99,8 +99,8 @@
 		"immatureDepth": 20,
 		"keepTxFees": false,
 		"interval": "10m",
-		"daemon": "http://127.0.0.1:8610",
-		"timeout": "10s"
+		"daemon": "const def in server.go",
+		"timeout": "const def in server.go"
 	},
 
 	"payouts": {
