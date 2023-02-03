@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/core/types"
 
 	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 )
 
@@ -18,16 +18,15 @@ const maxBacklog = 3
 
 type heightDiffPair struct {
 	diff   *big.Int
-	height uint64
+	height []uint64
 }
 
 type BlockTemplate struct {
 	sync.RWMutex
-	Header               string
-	Seed                 string
-	Target               string
+	Header               *types.Header
+	Target               *big.Int
 	Difficulty           *big.Int
-	Height               uint64
+	Height               []uint64
 	GetPendingBlockCache *rpc.GetBlockReplyPart
 	nonces               map[string]bool
 	headers              map[string]heightDiffPair
@@ -59,7 +58,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		return
 	}
 	// No need to update, we have fresh job
-	if t != nil && t.Header == reply[0] {
+	if t != nil && t.Header == reply {
 		return
 	}
 
@@ -75,14 +74,16 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	// }
 
 	newTemplate := BlockTemplate{
-		Header:               reply[0],
-		Seed:                 reply[1],
-		Target:               reply[2],
+		Header:               reply,
+		Target:               reply.DifficultyArray()[2], //verify that zone difficulty comes first in the array
 		Height:               height,
 		Difficulty:           big.NewInt(diff[0]),
 		GetPendingBlockCache: pendingReply,
 		headers:              make(map[string]heightDiffPair),
 	}
+
+	// Needs to be replaced
+	/*
 	// Copy job backlog and add current one
 	newTemplate.headers[reply[0]] = heightDiffPair{
 		diff:   util.TargetHexToDiff(reply[2]),
@@ -95,8 +96,9 @@ func (s *ProxyServer) fetchBlockTemplate() {
 			}
 		}
 	}
+	*/
 	s.blockTemplate.Store(&newTemplate)
-	log.Printf("New block to mine on %s at height %d / %s", rpc.Name, height, reply[0][0:10])
+	log.Printf("New block to mine on %s at height %d / %s", rpc.Name, height, reply.Number)
 
 	// Stratum
 	if s.config.Proxy.Stratum.Enabled {
@@ -104,30 +106,43 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 }
 
-func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, []int64, error) {
+func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, []uint64, []int64, error) {
 	rpc := s.rpc()
 	reply, err := rpc.GetPendingBlock()
 	if err != nil {
 		log.Printf("Error while refreshing pending block on %s: %s", rpc.Name, err)
-		return nil, 0, []int64{0}, err
+		return nil, nil, nil, err
 	}
-	blockNumber, err := strconv.ParseUint(reply.Number, 16, 64)
-	if err != nil {
-		log.Println("Can't parse pending block number")
-		return nil, 0, []int64{0}, err
-	}
-	// blockDiff, err := strconv.ParseInt(strings.Replace(reply.Difficulty, "0x", "", -1), 16, 64)
-	// blockDiff := []string{}
-	var blockDiff []int64
-	for _,s := range reply.Difficulty {
-		// blockDiff = append(blockDiff, )
-		num, err := strconv.ParseInt(strings.Replace(s, "0x", "", -1), 16, 64)
-		blockDiff = append(blockDiff, num)
+	var blockNumbers []uint64
+	for _,s := range reply.Number {
+		blockNumber, err := hexutil.DecodeUint64(s)
 		if err != nil {
-			log.Println("Can't parse pending block difficulty")
-			return nil, 0, []int64{0}, err
+			log.Println("Can't parse hex block number.")
+			return nil, nil, nil, err
+		}
+		// blockNumber, err := strconv.ParseUint(s, 16, 64)
+		blockNumbers = append(blockNumbers, blockNumber)
+		log.Println("-------------------")
+		log.Println(blockNumber)
+		log.Println("-------------------")
+		if err != nil {
+			log.Println("Can't parse pending block number")
+			return nil, nil, nil, err
 		}
 	}
 
-	return reply, blockNumber, blockDiff, nil
+	// blockDiff, err := strconv.ParseInt(strings.Replace(reply.Difficulty, "0x", "", -1), 16, 64)
+	// blockDiff := []string{}
+	var blockDiffs []int64
+	for _,s := range reply.Difficulty {
+		// blockDiff = append(blockDiff, )
+		num, err := strconv.ParseInt(strings.Replace(s, "0x", "", -1), 16, 64)
+		blockDiffs = append(blockDiffs, num)
+		if err != nil {
+			log.Println("Can't parse pending block difficulty")
+			return nil, nil, nil, err
+		}
+	}
+
+	return reply, blockNumbers, blockDiffs, nil
 }

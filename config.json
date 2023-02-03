@@ -62,7 +62,7 @@
 		"enabled": true,
 		"purgeOnly": false,
 		"purgeInterval": "10m",
-		"listen": "0.0.0.0:1561",
+		"listen": "0.0.0.0:30300",
 		"statsCollectInterval": "5s",
 		"hashrateWindow": "30m",
 		"hashrateLargeWindow": "3h",
@@ -79,7 +79,7 @@
 	"upstream": [
 		{
 			"name": "main",
-			"url": "http://127.0.0.1:8678",
+			"url": "http://127.0.0.1:8610",
 			"timeout": "10s"
 		}
 	],
@@ -89,32 +89,6 @@
 		"poolSize": 10,
 		"database": 0,
 		"password": ""
-	},
-
-	"unlocker": {
-		"enabled": false,
-		"poolFee": 1.0,
-		"poolFeeAddress": "",
-		"depth": 120,
-		"immatureDepth": 20,
-		"keepTxFees": false,
-		"interval": "10m",
-		"daemon": "const def in server.go",
-		"timeout": "const def in server.go"
-	},
-
-	"payouts": {
-		"enabled": false,
-		"requirePeers": 25,
-		"interval": "120m",
-		"daemon": "http://127.0.0.1:123",
-		"timeout": "10s",
-		"address": "0x0",
-		"gas": "21000",
-		"gasPrice": "50000000000",
-		"autoGas": true,
-		"threshold": 500000000,
-		"bgsave": false
 	},
 
 	"newrelicEnabled": false,

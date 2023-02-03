@@ -186,10 +186,11 @@ func (s *ProxyServer) removeSession(cs *Session) {
 
 func (s *ProxyServer) broadcastNewJobs() {
 	t := s.currentBlockTemplate()
-	if t == nil || len(t.Header) == 0 || s.isSick() {
+	if t == nil || t.Header == nil || s.isSick() {
 		return
 	}
-	reply := []string{t.Header, t.Seed, s.diff}
+	// reply := []string{t.Header, t.Seed, s.diff}
+	reply := t.Header
 
 	s.sessionsMu.RLock()
 	defer s.sessionsMu.RUnlock()

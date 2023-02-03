@@ -69,7 +69,7 @@ type GetBlockReply struct {
 }
 
 type GetBlockReplyPart struct {
-	Number     string `json:"number"`
+	Number     []string `json:"number"`
 	Difficulty []string `json:"difficulty"`
 }
 
@@ -115,12 +115,13 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 	return rpcClient
 }
 
-func (r *RPCClient) GetWork() ([]string, error) { //GetPendingHeader()
+func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
 	rpcResp, err := r.doPost(r.Url, "quai_getPendingHeader", []string{})
 	if err != nil {
 		return nil, err
 	}
-	var reply []string
+	// var reply []string
+	var reply *types.Header
 	err = json.Unmarshal(*rpcResp.Result, &reply)
 	return reply, err
 }

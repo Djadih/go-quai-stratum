@@ -7,6 +7,7 @@ import (
 
 	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai/core/types"
 )
 
 // Allow only lowercase hexadecimal with 0x prefix
@@ -33,12 +34,13 @@ func (s *ProxyServer) handleLoginRPC(cs *Session, params []string, id string) (b
 	return true, nil
 }
 
-func (s *ProxyServer) handleGetWorkRPC(cs *Session) ([]string, *ErrorReply) {
+func (s *ProxyServer) handleGetWorkRPC(cs *Session) (*types.Header, *ErrorReply) {
 	t := s.currentBlockTemplate()
-	if t == nil || len(t.Header) == 0 || s.isSick() {
+	if t == nil || t.Header == nil || s.isSick() {
 		return nil, &ErrorReply{Code: 0, Message: "Work not ready"}
 	}
-	return []string{t.Header, t.Seed, s.diff}, nil
+	// return []string{t.Header, t.Seed, s.diff}, nil
+	return t.Header, nil
 }
 
 // Stratum
