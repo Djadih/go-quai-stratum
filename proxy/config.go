@@ -24,7 +24,7 @@ type Config struct {
 	// Payouts       payouts.PayoutsConfig  `json:"payouts"`
 
 	AvgBlockTime    float64 `json:"avgBlockTime"`
-	BlockTimeWindow int64   `json:"blockTimeWindow"`
+	BlockTimeWindow uint64   `json:"blockTimeWindow"`
 
 	NewrelicName    string `json:"newrelicName"`
 	NewrelicKey     string `json:"newrelicKey"`

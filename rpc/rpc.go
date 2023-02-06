@@ -56,8 +56,8 @@ type GetBlockReply struct {
 	ManifestHash  []common.Hash    `json:"manifestHash"        gencodec:"required"`
 	ReceiptHash   []common.Hash    `json:"receiptsRoot"        gencodec:"required"`
 	Bloom         []types.Bloom    `json:"logsBloom"           gencodec:"required"`
-	Difficulty    []*hexutil.Big   `json:"difficulty"          gencodec:"required"`
-	Number        []*hexutil.Big   `json:"number"              gencodec:"required"`
+	Difficulty    []string	       `json:"difficulty"          gencodec:"required"`
+	Number        []string	       `json:"number"              gencodec:"required"`
 	GasLimit      []hexutil.Uint64 `json:"gasLimit"            gencodec:"required"`
 	GasUsed       []hexutil.Uint64 `json:"gasUsed"             gencodec:"required"`
 	BaseFee       []*hexutil.Big   `json:"baseFeePerGas"       gencodec:"required"`
@@ -68,10 +68,10 @@ type GetBlockReply struct {
 	Hash          common.Hash      `json:"hash"`
 }
 
-type GetBlockReplyPart struct {
-	Number     []string `json:"number"`
-	Difficulty []string `json:"difficulty"`
-}
+// type GetBlockReplyPart struct {
+// 	Number     []string `json:"number"`
+// 	Difficulty []string `json:"difficulty"`
+// }
 
 const receiptStatusSuccessful = "0x1"
 
@@ -126,21 +126,23 @@ func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
 	return reply, err
 }
 
-func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
-	rpcResp, err := r.doPost(r.Url, "quai_getBlockByNumber", []interface{}{"pending", false})
+func (r *RPCClient) GetPendingBlock() (*types.PendingHeader, error) {
+	rpcResp, err := r.doPost(r.Url, "quai_getHeaderByNumber", []interface{}{"pending", false})
 	if err != nil {
 		return nil, err
 	}
 	// log.Print(rpcResp.Result)
 	if rpcResp.Result != nil {
-		var reply *GetBlockReplyPart
+		var reply *GetBlockReply
 		err = json.Unmarshal(*rpcResp.Result, &reply)
-		return reply, err
+
+		var replyHeader
+		// return reply, err
 	}
 	return nil, nil
 }
 
-func (r *RPCClient) GetBlockByHeight(height int64) (*GetBlockReply, error) {
+func (r *RPCClient) GetBlockByHeight(height uint64) (*GetBlockReply, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height), true}
 	log.Print("GetBlockByHeight params ")
 	log.Println(params)
@@ -185,6 +187,7 @@ func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
 	}
 	return nil, nil
 }
+
 // submit block
 func (r *RPCClient) ReceiveMinedHeader(params []string) (bool, error) {
 	rpcResp, err := r.doPost(r.Url, "quai_receiveMinedHeader", params)

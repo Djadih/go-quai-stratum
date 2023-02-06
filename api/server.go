@@ -64,9 +64,9 @@ func NewApiServer(cfg *ApiConfig, settings map[string]interface{}, backend *stor
 	// rpcTimeout := settings["BlockUnlocker"].(map[string]interface{})["Timeout"].(string)
 	rpcTimeout := "10s"
 	rpc := rpc.NewRPCClient("BlockUnlocker", rpcDaemon, rpcTimeout)
-
+	
+	log.Println("Getting genesis header")
 	block, err := rpc.GetBlockByHeight(0)
-	log.Println("Getting genesis block")
 	if err != nil || block == nil {
 		log.Fatalf("Error while retrieving genesis block from node: %v", err)
 	}

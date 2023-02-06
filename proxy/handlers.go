@@ -119,9 +119,9 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 	return true, nil
 }
 
-func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
+func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReply {
 	t := s.currentBlockTemplate()
-	var reply *rpc.GetBlockReplyPart
+	var reply *rpc.GetBlockReply
 	if t != nil {
 		reply = t.GetPendingBlockCache
 	}
