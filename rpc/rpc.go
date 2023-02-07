@@ -56,8 +56,8 @@ type GetBlockReply struct {
 	ManifestHash  []common.Hash    `json:"manifestHash"        gencodec:"required"`
 	ReceiptHash   []common.Hash    `json:"receiptsRoot"        gencodec:"required"`
 	Bloom         []types.Bloom    `json:"logsBloom"           gencodec:"required"`
-	Difficulty    []string	       `json:"difficulty"          gencodec:"required"`
-	Number        []string	       `json:"number"              gencodec:"required"`
+	Difficulty    []big.Int	       `json:"difficulty"          gencodec:"required"`
+	Number        []big.Int	       `json:"number"              gencodec:"required"`
 	GasLimit      []hexutil.Uint64 `json:"gasLimit"            gencodec:"required"`
 	GasUsed       []hexutil.Uint64 `json:"gasUsed"             gencodec:"required"`
 	BaseFee       []*hexutil.Big   `json:"baseFeePerGas"       gencodec:"required"`
@@ -126,49 +126,53 @@ func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
 	return reply, err
 }
 
-func (r *RPCClient) GetPendingBlock() (*types.PendingHeader, error) {
+func (r *RPCClient) GetPendingBlock() (*types.Header, error) {
 	rpcResp, err := r.doPost(r.Url, "quai_getHeaderByNumber", []interface{}{"pending", false})
 	if err != nil {
 		return nil, err
 	}
 	// log.Print(rpcResp.Result)
 	if rpcResp.Result != nil {
-		var reply *GetBlockReply
+		var reply *types.Header
 		err = json.Unmarshal(*rpcResp.Result, &reply)
+		if err != nil {
+			return nil, err
+		}
 
-		var replyHeader
-		// return reply, err
+
+
+		return reply, err
 	}
 	return nil, nil
 }
 
-func (r *RPCClient) GetBlockByHeight(height uint64) (*GetBlockReply, error) {
-	params := []interface{}{fmt.Sprintf("0x%x", height), true}
+func (r *RPCClient) GetBlockByHeight(height int64) (*types.Header, error) {
+	params := []interface{}{fmt.Sprintf("0x%x", height)}
 	log.Print("GetBlockByHeight params ")
 	log.Println(params)
-	return r.getBlockBy("quai_getBlockByNumber", params)
+	return r.getBlockBy("quai_getHeaderByNumber", params)
 }
 
-func (r *RPCClient) GetBlockByHash(hash string) (*GetBlockReply, error) {
+func (r *RPCClient) GetBlockByHash(hash string) (*types.Header, error) {
 	params := []interface{}{hash, true}
 	return r.getBlockBy("eth_getBlockByHash", params)
 }
 
-func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*GetBlockReply, error) {
+func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*types.Header, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height), fmt.Sprintf("0x%x", index)}
 	return r.getBlockBy("eth_getUncleByBlockNumberAndIndex", params)
 }
 
 // The most important function for now.
-func (r *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockReply, error) {
+func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Header, error) {
 	rpcResp, err := r.doPost(r.Url, method, params)
-	fmt.Println(r.Url)
+	log.Println(r.Url)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(*rpcResp.Result))
+	log.Println(string(*rpcResp.Result))
 	if rpcResp.Result != nil {
-		var reply *GetBlockReply
+		var reply *types.Header
 		err = json.Unmarshal(*rpcResp.Result, &reply)
 		return reply, err
 	}

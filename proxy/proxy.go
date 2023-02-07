@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -119,7 +118,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 				t := proxy.currentBlockTemplate()
 				if t != nil {
 					rpc := proxy.rpc()
-					height := t.Height[2].Uint64() - 1
+					height := t.Height[2].Int64() - 1
 					prev := height - cfg.BlockTimeWindow
 					if prev < 0 {
 						prev = 0
@@ -131,10 +130,10 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 							log.Printf("Error while retrieving block from node: %v", err)
 							proxy.markSick()
 						} else {
-							timestamp, _ := strconv.ParseInt(strings.Replace(block.Time.String(), "0x", "", -1), 16, 64)
+							timestamp := block.Time()
 							prevblock, _ := rpc.GetBlockByHeight(prev)
-							prevtime, _ := strconv.ParseInt(strings.Replace(prevblock.Time.String(), "0x", "", -1), 16, 64)
-							blocktime := float64(timestamp-prevtime) / float64(n)
+							prevTime := prevblock.Time()
+							blocktime := float64(timestamp-prevTime) / float64(n)
 							err = backend.WriteNodeState(cfg.Name, t.Height[2].Uint64()-1, t.Difficulty, blocktime)
 							if err != nil {
 								log.Printf("Failed to write node state to backend: %v", err)

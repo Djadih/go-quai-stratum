@@ -75,9 +75,9 @@ func (s *ProxyServer) fetchBlockTemplate() {
 
 	newTemplate := BlockTemplate{
 		Header:               pendingHeader,
-		Target:               pendingHeader.DifficultyArray(),
+		Target:               pendingHeader.DifficultyArray()[2],
 		Height:               pendingHeader.NumberArray(),
-		Difficulty:           pendingHeader.DifficultyArray(), //need to convert this with the formula
+		Difficulty:           pendingHeader.DifficultyArray()[2], //need to convert this with the formula
 		// GetPendingBlockCache: pendingReply,
 		headers:              make(map[string]heightDiffPair),
 	}
@@ -98,7 +98,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		}
 	*/
 	s.blockTemplate.Store(&newTemplate)
-	log.Printf("New block to mine on %s at height %d / %s", rpc.Name, pendingHeader.NumberArray(), reply.Number)
+	log.Printf("New block to mine on %s at height %d / %s", rpc.Name, pendingHeader.NumberArray(), pendingHeader.NumberArray())
 
 	// Stratum
 	if s.config.Proxy.Stratum.Enabled {
