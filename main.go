@@ -99,12 +99,6 @@ func main() {
 	if cfg.Api.Enabled {
 		go startApi()
 	}
-	// if cfg.BlockUnlocker.Enabled {
-	// 	go startBlockUnlocker()
-	// }
-	// if cfg.Payouts.Enabled {
-	// 	go startPayoutsProcessor()
-	// }
 	quit := make(chan bool)
 	<-quit
 }
