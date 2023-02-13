@@ -63,11 +63,13 @@ func (s *ProxyServer) ListenTCP() {
 }
 
 func (s *ProxyServer) handleTCPClient(cs *Session) error {
+	log.Println("Received TCP dial")
 	cs.enc = json.NewEncoder(cs.conn)
 	connbuff := bufio.NewReaderSize(cs.conn, MaxReqSize)
 	s.setDeadline(cs.conn)
 	for {
 		data, isPrefix, err := connbuff.ReadLine()
+		log.Println("Received TCP data from client")
 		if isPrefix {
 			log.Printf("Socket flood detected from %s", cs.ip)
 			s.policy.BanClient(cs.ip)
@@ -168,8 +170,9 @@ func (cs *Session) sendTCPError(id json.RawMessage, reply *ErrorReply) error {
 	return errors.New(reply.Message)
 }
 
-func (self *ProxyServer) setDeadline(conn *net.TCPConn) {
-	conn.SetDeadline(time.Now().Add(self.timeout))
+func (*ProxyServer) setDeadline(conn *net.TCPConn) {
+	// conn.SetDeadline(time.Now().Add(self.timeout))
+	conn.SetDeadline(time.Time{})
 }
 
 func (s *ProxyServer) registerSession(cs *Session) {
