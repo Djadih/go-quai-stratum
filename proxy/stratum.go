@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai/core/types"
 )
 
 const (
@@ -121,7 +122,10 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 		if errReply != nil {
 			return cs.sendTCPError(req.Id, errReply)
 		}
-		return cs.sendTCPResult(req.Id, &reply)
+		header_rep := RPCMarshalHeader(reply)
+		log.Println(header_rep)
+		cs.sendTCPResult(req.Id, header_rep)
+		return nil
 	case "quai_receiveMinedHeader":
 		var params []string
 		err := json.Unmarshal(req.Params, &params)
@@ -141,6 +145,16 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 		return cs.sendTCPError(req.Id, errReply)
 	}
 }
+
+func (cs *Session) sendHeaderTCP(id json.RawMessage, result *types.Header) ([]byte, error) {
+	cs.Lock()
+	defer cs.Unlock()
+
+	message := JSONRpcResp{Id: id, Version: "2.0", Error: nil, Result: result}
+	// return cs.enc.Encode(&message)
+	return json.Marshal(message.Result)
+}
+
 
 func (cs *Session) sendTCPResult(id json.RawMessage, result interface{}) error {
 	cs.Lock()
