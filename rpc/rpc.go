@@ -2,15 +2,15 @@ package rpc
 
 import (
 	"bytes"
-	"crypto/sha256"
+	// "crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
-	"strconv"
-	"strings"
+	// "strconv"
+	// "strings"
 	"sync"
 
 	"github.com/dominant-strategies/go-quai/common"
@@ -188,25 +188,25 @@ func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) (error) {
 	return err
 }
 
-func (r *RPCClient) GetPendingBlock() (*types.Header, error) {
-	rpcResp, err := r.doPost(r.Url, "quai_getHeaderByNumber", []interface{}{"pending", false})
-	if err != nil {
-		return nil, err
-	}
-	// log.Print(rpcResp.Result)
-	if rpcResp.Result != nil {
-		var reply *types.Header
-		err = json.Unmarshal(*rpcResp.Result, &reply)
-		if err != nil {
-			return nil, err
-		}
+// func (r *RPCClient) GetPendingBlock() (*types.Header, error) {
+// 	rpcResp, err := r.doPost(r.Url, "quai_getHeaderByNumber", []interface{}{"pending", false})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// log.Print(rpcResp.Result)
+// 	if rpcResp.Result != nil {
+// 		var reply *types.Header
+// 		err = json.Unmarshal(*rpcResp.Result, &reply)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
 
 
-		return reply, err
-	}
-	return nil, nil
-}
+// 		return reply, err
+// 	}
+// 	return nil, nil
+// }
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*types.Header, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height)}
@@ -241,101 +241,101 @@ func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Head
 	return nil, nil
 }
 
-func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getTransactionReceipt", []string{hash})
-	if err != nil {
-		return nil, err
-	}
-	if rpcResp.Result != nil {
-		var reply *TxReceipt
-		err = json.Unmarshal(*rpcResp.Result, &reply)
-		return reply, err
-	}
-	return nil, nil
-}
+// func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
+// 	rpcResp, err := r.doPost(r.Url, "eth_getTransactionReceipt", []string{hash})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if rpcResp.Result != nil {
+// 		var reply *TxReceipt
+// 		err = json.Unmarshal(*rpcResp.Result, &reply)
+// 		return reply, err
+// 	}
+// 	return nil, nil
+// }
 
-// submit block
-func (r *RPCClient) ReceiveMinedHeader(params []string) (bool, error) {
-	rpcResp, err := r.doPost(r.Url, "quai_receiveMinedHeader", params)
-	if err != nil {
-		return false, err
-	}
-	var reply bool
-	err = json.Unmarshal(*rpcResp.Result, &reply)
-	return reply, err
-}
+// // submit block
+// func (r *RPCClient) ReceiveMinedHeader(params []string) (bool, error) {
+// 	rpcResp, err := r.doPost(r.Url, "quai_receiveMinedHeader", params)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	var reply bool
+// 	err = json.Unmarshal(*rpcResp.Result, &reply)
+// 	return reply, err
+// }
 
-func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getBalance", []string{address, "latest"})
-	if err != nil {
-		return nil, err
-	}
-	var reply string
-	err = json.Unmarshal(*rpcResp.Result, &reply)
-	if err != nil {
-		return nil, err
-	}
-	return util.String2Big(reply), err
-}
+// func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
+// 	rpcResp, err := r.doPost(r.Url, "eth_getBalance", []string{address, "latest"})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var reply string
+// 	err = json.Unmarshal(*rpcResp.Result, &reply)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return util.String2Big(reply), err
+// }
 
-func (r *RPCClient) Sign(from string, s string) (string, error) {
-	hash := sha256.Sum256([]byte(s))
-	rpcResp, err := r.doPost(r.Url, "eth_sign", []string{from, hexutil.Encode(hash[:])})
-	var reply string
-	if err != nil {
-		return reply, err
-	}
-	err = json.Unmarshal(*rpcResp.Result, &reply)
-	if err != nil {
-		return reply, err
-	}
-	if util.IsZeroHash(reply) {
-		err = errors.New("Can't sign message, perhaps account is locked")
-	}
-	return reply, err
-}
+// func (r *RPCClient) Sign(from string, s string) (string, error) {
+// 	hash := sha256.Sum256([]byte(s))
+// 	rpcResp, err := r.doPost(r.Url, "eth_sign", []string{from, hexutil.Encode(hash[:])})
+// 	var reply string
+// 	if err != nil {
+// 		return reply, err
+// 	}
+// 	err = json.Unmarshal(*rpcResp.Result, &reply)
+// 	if err != nil {
+// 		return reply, err
+// 	}
+// 	if util.IsZeroHash(reply) {
+// 		err = errors.New("Can't sign message, perhaps account is locked")
+// 	}
+// 	return reply, err
+// }
 
-func (r *RPCClient) GetPeerCount() (int64, error) {
-	rpcResp, err := r.doPost(r.Url, "net_peerCount", nil)
-	if err != nil {
-		return 0, err
-	}
-	var reply string
-	err = json.Unmarshal(*rpcResp.Result, &reply)
-	if err != nil {
-		return 0, err
-	}
-	return strconv.ParseInt(strings.Replace(reply, "0x", "", -1), 16, 64)
-}
+// func (r *RPCClient) GetPeerCount() (int64, error) {
+// 	rpcResp, err := r.doPost(r.Url, "net_peerCount", nil)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	var reply string
+// 	err = json.Unmarshal(*rpcResp.Result, &reply)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return strconv.ParseInt(strings.Replace(reply, "0x", "", -1), 16, 64)
+// }
 
-func (r *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoGas bool) (string, error) {
-	params := map[string]string{
-		"from":  from,
-		"to":    to,
-		"value": value,
-	}
-	if !autoGas {
-		params["gas"] = gas
-		params["gasPrice"] = gasPrice
-	}
-	rpcResp, err := r.doPost(r.Url, "eth_sendTransaction", []interface{}{params})
-	var reply string
-	if err != nil {
-		return reply, err
-	}
-	err = json.Unmarshal(*rpcResp.Result, &reply)
-	if err != nil {
-		return reply, err
-	}
-	/* There is an inconsistence in a "standard". Geth returns error if it can't unlock signer account,
-	 * but Parity returns zero hash 0x000... if it can't send tx, so we must handle this case.
-	 * https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-22
-	 */
-	if util.IsZeroHash(reply) {
-		err = errors.New("transaction is not yet available")
-	}
-	return reply, err
-}
+// func (r *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoGas bool) (string, error) {
+// 	params := map[string]string{
+// 		"from":  from,
+// 		"to":    to,
+// 		"value": value,
+// 	}
+// 	if !autoGas {
+// 		params["gas"] = gas
+// 		params["gasPrice"] = gasPrice
+// 	}
+// 	rpcResp, err := r.doPost(r.Url, "eth_sendTransaction", []interface{}{params})
+// 	var reply string
+// 	if err != nil {
+// 		return reply, err
+// 	}
+// 	err = json.Unmarshal(*rpcResp.Result, &reply)
+// 	if err != nil {
+// 		return reply, err
+// 	}
+// 	/* There is an inconsistence in a "standard". Geth returns error if it can't unlock signer account,
+// 	 * but Parity returns zero hash 0x000... if it can't send tx, so we must handle this case.
+// 	 * https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-22
+// 	 */
+// 	if util.IsZeroHash(reply) {
+// 		err = errors.New("transaction is not yet available")
+// 	}
+// 	return reply, err
+// }
 
 func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSONRpcResp, error) {
 	var jsonReq map[string]interface{}
