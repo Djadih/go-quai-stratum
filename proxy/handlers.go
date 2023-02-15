@@ -87,6 +87,7 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 
 		return false, &ErrorReply{Code: -1, Message: "Malformed PoW result"}
 	}
+	/*	
 	t := s.currentBlockTemplate()
 
 	
@@ -116,6 +117,7 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 	if !ok {
 		return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
 	}
+	*/
 	return true, nil
 }
 

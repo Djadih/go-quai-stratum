@@ -19,6 +19,9 @@ clean:
 	env GO111MODULE=on go clean -cache
 	rm -fr build/_workspace/pkg/ $(GOBIN)/*
 
+dev:
+	$(GOBUILD) -gcflags="all=-N -l" -o ./build/bin/quai-stratum ./main.go
+
 quai-stratum:
 	$(GOBUILD) -o ./build/bin/quai-stratum ./main.go
 

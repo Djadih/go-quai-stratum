@@ -106,53 +106,6 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 }
 
-// RPCMarshalHeader converts the given header to the RPC output .
-func RPCMarshalHeader(head *types.Header) map[string]interface{} {
-	result := map[string]interface{}{
-		"hash":                head.Hash(),
-		"parentHash":          head.ParentHashArray(),
-		"nonce":               head.Nonce(),
-		"sha3Uncles":          head.UncleHashArray(),
-		"logsBloom":           head.BloomArray(),
-		"stateRoot":           head.RootArray(),
-		"miner":               head.CoinbaseArray(),
-		"extraData":           hexutil.Bytes(head.Extra()),
-		"size":                hexutil.Uint64(head.Size()),
-		"timestamp":           hexutil.Uint64(head.Time()),
-		"transactionsRoot":    head.TxHashArray(),
-		"receiptsRoot":        head.ReceiptHashArray(),
-		"extTransactionsRoot": head.EtxHashArray(),
-		"extRollupRoot":       head.EtxRollupHashArray(),
-		"manifestHash":        head.ManifestHashArray(),
-		"location":            head.Location(),
-	}
-
-	number := make([]*hexutil.Big, common.HierarchyDepth)
-	difficulty := make([]*hexutil.Big, common.HierarchyDepth)
-	gasLimit := make([]hexutil.Uint, common.HierarchyDepth)
-	gasUsed := make([]hexutil.Uint, common.HierarchyDepth)
-	for i := 0; i < common.HierarchyDepth; i++ {
-		number[i] = (*hexutil.Big)(head.Number(i))
-		difficulty[i] = (*hexutil.Big)(head.Difficulty(i))
-		gasLimit[i] = hexutil.Uint(head.GasLimit(i))
-		gasUsed[i] = hexutil.Uint(head.GasUsed(i))
-	}
-	result["number"] = number
-	result["difficulty"] = difficulty
-	result["gasLimit"] = gasLimit
-	result["gasUsed"] = gasUsed
-
-	if head.BaseFee() != nil {
-		results := make([]*hexutil.Big, common.HierarchyDepth)
-		for i := 0; i < common.HierarchyDepth; i++ {
-			results[i] = (*hexutil.Big)(head.BaseFee(i))
-		}
-		result["baseFeePerGas"] = results
-	}
-
-	return result
-}
-
 /*
 func (s *ProxyServer) fetchPendingBlock() (blockReply *rpc.GetBlockReplyPart, height []*big.Int, difficulty []*big.Int, err error) {
 	rpc := s.rpc()

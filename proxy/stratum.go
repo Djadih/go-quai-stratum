@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
 const (
-	MaxReqSize = 1024
+	MaxReqSize = 4096
 )
 
 func (s *ProxyServer) ListenTCP() {
@@ -122,22 +123,26 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 		if errReply != nil {
 			return cs.sendTCPError(req.Id, errReply)
 		}
-		header_rep := RPCMarshalHeader(reply)
+		header_rep := rpc.RPCMarshalHeader(reply)
 		log.Println(header_rep)
 		cs.sendTCPResult(req.Id, header_rep)
 		return nil
 	case "quai_receiveMinedHeader":
-		var params []string
-		err := json.Unmarshal(req.Params, &params)
+		// var params []string
+		var received_header *types.Header
+		err := json.Unmarshal(req.Params, &received_header)
 		if err != nil {
-			log.Println("Malformed stratum request params from", cs.ip)
+			log.Println("Unable to decode header from ", cs.ip)
+			// log.Println("Malformed stratum request params from", cs.ip)
 			return err
 		}
-		reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, params)
-		if errReply != nil {
-			return cs.sendTCPError(req.Id, errReply)
-		}
-		return cs.sendTCPResult(req.Id, &reply)
+		err = s.rpc().SubmitMinedHeader(received_header)
+		// reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, received_header)
+		// if errReply != nil {
+		// 	return cs.sendTCPError(req.Id, errReply)
+		// }
+		// return cs.sendTCPResult(req.Id, &reply)
+		return nil
 	case "eth_submitHashrate":
 		return cs.sendTCPResult(req.Id, true)
 	default:
