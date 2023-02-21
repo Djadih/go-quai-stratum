@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/dominant-strategies/go-quai/common"
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron"
 
@@ -46,7 +47,7 @@ type ApiServer struct {
 	miners              map[string]*Entry
 	minersMu            sync.RWMutex
 	statsIntv           time.Duration
-	rpc                 *rpc.RPCClient
+	rpc                 [common.HierarchyDepth]*rpc.RPCClient
 }
 
 type Entry struct {
@@ -55,19 +56,26 @@ type Entry struct {
 }
 
 func NewApiServer(cfg *ApiConfig, settings map[string]interface{}, backend *storage.RedisClient) *ApiServer {
-	log.Println(settings)
+	// log.Println(settings)
+	rpcDaemons := [common.HierarchyDepth]*rpc.RPCClient{}
 	// rpcDaemon := settings["BlockUnlocker"].(map[string]interface{})["Daemon"].(string)
-	rpcDaemon := "http://127.0.0.1:8610"
-	// rpcTimeout := settings["BlockUnlocker"].(map[string]interface{})["Timeout"].(string)
-	rpcTimeout := "10s"
-	rpc := rpc.NewRPCClient("BlockUnlocker", rpcDaemon, rpcTimeout)
-	
-	log.Println("Getting genesis header")
-	block, err := rpc.GetBlockByHeight(0)
-	// log.Println(block)
-	if err != nil || block == nil {
-		log.Fatalf("Error while retrieving genesis block from node: %v", err)
+	// rpcDaemon := settings["Upstream"].([]map[string]interface{})[0]["Url"].(string)
+
+	for level := 0; level < common.HierarchyDepth; level++ {
+		rpcConfig := settings["Upstream"].([]interface{})[level].(map[string]interface{})
+		rpcDaemons[level] = rpc.NewRPCClient(
+			rpcConfig["Name"].(string),
+			rpcConfig["Url"].(string),
+			rpcConfig["Timeout"].(string))
 	}
+
+	// log.Println("Getting genesis header")
+
+	// block, err := rpcDaemons[0].GetBlockByHeight(0)
+	// log.Println(block)
+	// if err != nil || block == nil {
+	// 	log.Fatalf("Error while retrieving genesis block from node: %v", err)
+	// }
 
 	hashrateWindow := util.MustParseDuration(cfg.HashrateWindow)
 	hashrateLargeWindow := util.MustParseDuration(cfg.HashrateLargeWindow)
@@ -78,7 +86,7 @@ func NewApiServer(cfg *ApiConfig, settings map[string]interface{}, backend *stor
 		hashrateWindow:      hashrateWindow,
 		hashrateLargeWindow: hashrateLargeWindow,
 		miners:              make(map[string]*Entry),
-		rpc:                 rpc,
+		rpc:                 rpcDaemons,
 	}
 }
 

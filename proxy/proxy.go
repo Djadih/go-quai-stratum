@@ -22,8 +22,7 @@ import (
 type ProxyServer struct {
 	config             *Config
 	blockTemplate      atomic.Value
-	upstream           int32
-	upstreams          []*rpc.RPCClient
+	upstreams          map[string]*rpc.RPCClient
 	backend            *storage.RedisClient
 	diff               string
 	policy             *policy.PolicyServer
@@ -61,16 +60,51 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 		log.Fatal("You must set instance name")
 	}
 	policy := policy.Start(&cfg.Proxy.Policy, backend)
-
+	
 	proxy := &ProxyServer{config: cfg, backend: backend, policy: policy}
 	proxy.diff = util.GetTargetHex(cfg.Proxy.Difficulty[0])
 
-	proxy.upstreams = make([]*rpc.RPCClient, len(cfg.Upstream))
-	for i, v := range cfg.Upstream {
-		proxy.upstreams[i] = rpc.NewRPCClient(v.Name, v.Url, v.Timeout)
-		log.Printf("Upstream: %s => %s", v.Name, v.Url)
+	// proxy.upstreams = make([]*rpc.RPCClient, len(cfg.Upstream))
+	// for i, v := range cfg.Upstream {
+	// 	proxy.upstreams[i] = rpc.NewRPCClient(v.Name, v.Url, v.Timeout)
+	// 	log.Printf("Upstream: %s => %s", v.Name, v.Url)
+	// }
+	// log.Printf("Default upstream: %s => %s", proxy.rpc().Name, proxy.rpc().Url)
+
+	// rpcDaemons := [common.HierarchyDepth]*rpc.RPCClient{}
+	proxy.upstreams = map[string]*rpc.RPCClient{
+		"prime"		:	rpc.NewRPCClient(
+			cfg.Upstream[0].Name,
+			cfg.Upstream[0].Url,
+			cfg.Upstream[0].Timeout,
+		),
+		"region"	:	rpc.NewRPCClient(
+			cfg.Upstream[1].Name,
+			cfg.Upstream[1].Url,
+			cfg.Upstream[1].Timeout,
+		),
+		"zone"		:	rpc.NewRPCClient(
+			cfg.Upstream[2].Name,
+			cfg.Upstream[2].Url,
+			cfg.Upstream[2].Timeout,
+		),
 	}
-	log.Printf("Default upstream: %s => %s", proxy.rpc().Name, proxy.rpc().Url)
+	// rpcDaemon := settings["BlockUnlocker"].(map[string]interface{})["Daemon"].(string)
+	// rpcDaemon := settings["Upstream"].([]map[string]interface{})[0]["Url"].(string)
+
+	// for level := 0; level < common.HierarchyDepth; level++ {
+	// 	// rpcConfig := settings["Upstream"].([]interface{})[level].(map[string]interface{})
+	// 	// rpcDaemons[level] = rpc.NewRPCClient(
+	// 	// 	rpcConfig["Name"].(string),
+	// 	// 	rpcConfig["Url"].(string),
+	// 	// 	rpcConfig["Timeout"].(string))
+	// 	rpcDaemons[level] = rpc.NewRPCClient(
+	// 		cfg.Upstream[level].Name,
+	// 		cfg.Upstream[level].Url,
+	// 		cfg.Upstream[level].Timeout,
+	// 	)
+	// }
+
 
 	if cfg.Proxy.Stratum.Enabled {
 		proxy.sessions = make(map[*Session]struct{})
@@ -85,8 +119,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	refreshTimer := time.NewTimer(refreshIntv)
 	log.Printf("Set block refresh every %v", refreshIntv)
 
-	checkIntv := util.MustParseDuration(cfg.UpstreamCheckInterval)
-	checkTimer := time.NewTimer(checkIntv)
+	// checkIntv := util.MustParseDuration(cfg.UpstreamCheckInterval)
+	// checkTimer := time.NewTimer(checkIntv)
 
 	stateUpdateIntv := util.MustParseDuration(cfg.Proxy.StateUpdateInterval)
 	stateUpdateTimer := time.NewTimer(stateUpdateIntv)
@@ -101,15 +135,15 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 		}
 	}()
 
-	go func() {
-		for {
-			select {
-			case <-checkTimer.C:
-				proxy.checkUpstreams()
-				checkTimer.Reset(checkIntv)
-			}
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-checkTimer.C:
+	// 			proxy.checkUpstreams()
+	// 			checkTimer.Reset(checkIntv)
+	// 		}
+	// 	}
+	// }()
 
 	go func() {
 		for {
@@ -117,7 +151,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			case <-stateUpdateTimer.C:
 				t := proxy.currentBlockTemplate()
 				if t != nil {
-					rpc := proxy.rpc()
+					rpc := proxy.rpc("zone")
 					height := t.Height[2].Int64() - 1
 					prev := height - cfg.BlockTimeWindow
 					if prev < 0 {
@@ -176,26 +210,9 @@ func (s *ProxyServer) Start() {
 	}
 }
 
-func (s *ProxyServer) rpc() *rpc.RPCClient {
-	i := atomic.LoadInt32(&s.upstream)
-	return s.upstreams[i]
-}
-
-func (s *ProxyServer) checkUpstreams() {
-	candidate := int32(0)
-	backup := false
-
-	for i, v := range s.upstreams {
-		if v.Check() && !backup {
-			candidate = int32(i)
-			backup = true
-		}
-	}
-
-	if s.upstream != candidate {
-		log.Printf("Switching to %v upstream", s.upstreams[candidate].Name)
-		atomic.StoreInt32(&s.upstream, candidate)
-	}
+func (s *ProxyServer) rpc(level string) *rpc.RPCClient {
+	// i := atomic.LoadInt32(&s.upstream)
+	return s.upstreams[level]
 }
 
 func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {

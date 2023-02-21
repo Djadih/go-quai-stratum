@@ -145,7 +145,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 			// log.Println("Malformed stratum request params from", cs.ip)
 			return err
 		}
-		return s.rpc().SubmitMinedHeader(received_header)
+		return s.rpc("zone").SubmitMinedHeader(received_header)
 		// reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, received_header)
 		// if errReply != nil {
 			// return cs.sendTCPError(req.Id, errReply)

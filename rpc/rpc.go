@@ -6,13 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	// "log"
 	"math/big"
 	"net/http"
+
 	// "strconv"
 	// "strings"
 	"sync"
+	"log"
 
+	"github.com/INFURA/go-ethlibs/jsonrpc"
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 	"github.com/dominant-strategies/go-quai/core/types"
@@ -163,8 +167,9 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 }
 
 func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
-	rpcResp, err := r.doPost(r.Url, "quai_getPendingHeader", []string{})
+	rpcResp, err := r.doPost(r.Url, "quai_getPendingHeader", nil)
 	if err != nil {
+		log.Fatalf("Unable to post data while getting pending header: %v", err)
 		return nil, err
 	}
 	// var reply []string
@@ -338,16 +343,30 @@ func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Head
 // }
 
 func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSONRpcResp, error) {
-	var jsonReq map[string]interface{}
+	var data []byte
+	var err error
 	if method == "quai_receiveMinedHeader" {
-		jsonReq = map[string]interface{}{"jsonrpc": "2.0", "method": method, "params": []interface{}{params}, "id": 0}
+		jsonReq, err := jsonrpc.MakeRequest(0, method, params)
+		if err != nil {
+			log.Fatalf("Unable to make new rpc request to go-quai: %v", err)
+			return nil, err
+		}
+		data, err = jsonReq.MarshalJSON()
 	} else {
-		jsonReq = map[string]interface{}{"jsonrpc": "2.0", "method": method, "params": params, "id": 0}
+		jsonReq := map[string]interface{}{"jsonrpc": "2.0", "method": method, "params": params, "id": 0}
+		data, err = json.Marshal(jsonReq)
 	}
 
-	data, _ := json.Marshal(jsonReq)
+	if err != nil {
+		log.Fatalf("Unable to marshal rpc request into JSON: %v", err)
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		log.Fatalf("Error while posting data to go-quai: %v", err)
+		return nil, err
+	}
 	req.Header.Set("Content-Length", (string)(len(data)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
@@ -361,6 +380,7 @@ func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSON
 
 	var rpcResp *JSONRpcResp
 	err = json.NewDecoder(resp.Body).Decode(&rpcResp)
+	log.Println(resp.Body)
 	if err != nil {
 		r.markSick()
 		return nil, err

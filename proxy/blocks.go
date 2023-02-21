@@ -3,8 +3,10 @@ package proxy
 import (
 	"log"
 	"math/big"
+
 	// "strconv"
 	// "strings"
+	"errors"
 	"sync"
 
 	"github.com/dominant-strategies/go-quai/common"
@@ -45,7 +47,7 @@ func (b Block) Nonce() uint64              { return b.nonce }
 func (b Block) NumberU64() uint64          { return b.number }
 
 func (s *ProxyServer) fetchBlockTemplate() {
-	rpc := s.rpc()
+	rpc := s.rpc("zone")
 	t := s.currentBlockTemplate()
 	// pendingReply, height, _, err := s.fetchPendingBlock()
 	// if err != nil {
@@ -76,12 +78,12 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	// }
 
 	newTemplate := BlockTemplate{
-		Header:               pendingHeader,
-		Target:               pendingHeader.DifficultyArray()[2],
-		Height:               pendingHeader.NumberArray(),
-		Difficulty:           pendingHeader.DifficultyArray()[2], //need to convert this with the formula
+		Header:     pendingHeader,
+		Target:     pendingHeader.DifficultyArray()[2],
+		Height:     pendingHeader.NumberArray(),
+		Difficulty: pendingHeader.DifficultyArray()[2], //need to convert this with the formula
 		// GetPendingBlockCache: pendingReply,
-		headers:              make(map[string]heightDiffPair),
+		headers: make(map[string]heightDiffPair),
 	}
 
 	// Needs to be replaced
@@ -106,6 +108,27 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	if s.config.Proxy.Stratum.Enabled {
 		go s.broadcastNewJobs()
 	}
+}
+
+var (
+	big2e256 = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), big.NewInt(0)) // 2^256
+)
+
+// This function determines the difficulty order of a block
+func (s *ProxyServer) GetDifficultyOrder(header *types.Header) (int, error) {
+	if header == nil {
+		return common.HierarchyDepth, errors.New("no header provided")
+	}
+	blockhash := header.Hash()
+	for i, difficulty := range header.DifficultyArray() {
+		if difficulty != nil && big.NewInt(0).Cmp(difficulty) < 0 {
+			target := new(big.Int).Div(big2e256, difficulty)
+			if new(big.Int).SetBytes(blockhash.Bytes()).Cmp(target) <= 0 {
+				return i, nil
+			}
+		}
+	}
+	return -1, errors.New("block does not satisfy minimum difficulty")
 }
 
 /*
