@@ -3,14 +3,15 @@ package proxy
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
+	// "errors"
 	"io"
 	"log"
 	"net"
 	"time"
 
-	"github.com/Djadih/go-quai-stratum/util"
-	"github.com/Djadih/go-quai-stratum/rpc"
+	"github.com/INFURA/go-ethlibs/jsonrpc"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
@@ -70,6 +71,7 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 	connbuff := bufio.NewReaderSize(cs.conn, MaxReqSize)
 	s.setDeadline(cs.conn)
 	for {
+		time.Sleep(1000)
 		data, isPrefix, err := connbuff.ReadLine()
 		log.Println("Received TCP data from client")
 		if isPrefix {
@@ -86,14 +88,15 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 		}
 
 		if len(data) > 1 {
-			var req StratumReq
-			err = json.Unmarshal(data, &req)
+			// var req StratumReq
+			var req jsonrpc.Request
+			// err = jsonrpc.Unmarshal(data, &req)
+			err = req.UnmarshalJSON(data)
 			if err != nil {
 				s.policy.ApplyMalformedPolicy(cs.ip)
 				log.Printf("Malformed stratum request from %s: %v", cs.ip, err)
 				return err
 			}
-			s.setDeadline(cs.conn)
 			err = cs.handleTCPMessage(s, &req)
 			if err != nil {
 				return err
@@ -103,51 +106,56 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 	return nil
 }
 
-func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
+func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error {
 	// Handle RPC methods
 	switch req.Method {
-	case "eth_submitLogin":
-		var params []string
-		err := json.Unmarshal(req.Params, &params)
-		if err != nil {
-			log.Println("Malformed stratum request params from", cs.ip)
-			return err
-		}
-		reply, errReply := s.handleLoginRPC(cs, params, req.Worker)
+	case "quai_submitLogin":
+		// var params []json.RawMessage
+		// var params jsonrpc.Params
+		// err := json.Unmarshal(req.Params, &params)
+
+		// if err != nil {
+		// 	log.Printf("Malformed stratum request from %s: %v", cs.ip, err)
+		// 	return err
+		// }
+		_, errReply := s.handleLoginRPC(cs, req.Params)
 		if errReply != nil {
-			return cs.sendTCPError(req.Id, errReply)
+			return cs.sendTCPError(*jsonrpc.MethodNotFound(req))
 		}
-		return cs.sendTCPResult(req.Id, reply)
+		// return cs.sendTCPResult(req.ID.String(), reply)
+		// true_rep := jsonrpc.NewResponse()
+		// true_rep.
+		return nil
 	case "quai_getPendingHeader":
 		reply, errReply := s.handleGetWorkRPC(cs)
 		if errReply != nil {
-			return cs.sendTCPError(req.Id, errReply)
+			// return cs.sendTCPError(req.ID.String(), errReply)
+			return cs.sendTCPError(*jsonrpc.NewError(0, errReply.Message))
 		}
 		header_rep := rpc.RPCMarshalHeader(reply)
 		log.Println(header_rep)
-		cs.sendTCPResult(req.Id, header_rep)
+		cs.sendTCPResult(req.ID.String(), header_rep)
 		return nil
 	case "quai_receiveMinedHeader":
 		// var params []string
 		var received_header *types.Header
-		err := json.Unmarshal(req.Params, &received_header)
+		// err := json.Unmarshal(req.Params, &received_header)
+		err := json.Unmarshal(req.Params[0], &received_header)
 		if err != nil {
 			log.Println("Unable to decode header from ", cs.ip)
 			// log.Println("Malformed stratum request params from", cs.ip)
 			return err
 		}
-		err = s.rpc().SubmitMinedHeader(received_header)
+		return s.rpc().SubmitMinedHeader(received_header)
 		// reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, received_header)
 		// if errReply != nil {
-		// 	return cs.sendTCPError(req.Id, errReply)
+			// return cs.sendTCPError(req.Id, errReply)
 		// }
-		// return cs.sendTCPResult(req.Id, &reply)
-		return nil
 	case "eth_submitHashrate":
-		return cs.sendTCPResult(req.Id, true)
+		return cs.sendTCPResult(req.ID.String(), true)
 	default:
-		errReply := s.handleUnknownRPC(cs, req.Method)
-		return cs.sendTCPError(req.Id, errReply)
+		// errReply := s.handleUnknownRPC(cs, req.Method)
+		return cs.sendTCPError(*jsonrpc.MethodNotFound(req))
 	}
 }
 
@@ -160,12 +168,17 @@ func (cs *Session) sendHeaderTCP(id json.RawMessage, result *types.Header) ([]by
 	return json.Marshal(message.Result)
 }
 
-
-func (cs *Session) sendTCPResult(id json.RawMessage, result interface{}) error {
+func (cs *Session) sendTCPResult(id string, result interface{}) error {
 	cs.Lock()
 	defer cs.Unlock()
 
-	message := JSONRpcResp{Id: id, Version: "2.0", Error: nil, Result: result}
+	// message := JSONRpcResp{Id: id, Version: "2.0", Error: nil, Result: result}
+	message := jsonrpc.Response{
+		ID:		jsonrpc.StringID(string(id)),
+		Result:	result,
+		Error:	nil,
+	}
+
 	return cs.enc.Encode(&message)
 }
 
@@ -177,16 +190,17 @@ func (cs *Session) pushNewJob(result interface{}) error {
 	return cs.enc.Encode(&message)
 }
 
-func (cs *Session) sendTCPError(id json.RawMessage, reply *ErrorReply) error {
+func (cs *Session) sendTCPError(err jsonrpc.Error) error {
 	cs.Lock()
 	defer cs.Unlock()
 
-	message := JSONRpcResp{Id: id, Version: "2.0", Error: reply}
-	err := cs.enc.Encode(&message)
-	if err != nil {
-		return err
-	}
-	return errors.New(reply.Message)
+	// message := JSONRpcResp{Id: id, Version: "2.0", Error: reply}
+	// err := cs.enc.Encode(&message)
+	// if err != nil {
+		// return err
+	// }
+	// return errors.New(reply.Message)
+	return nil
 }
 
 func (*ProxyServer) setDeadline(conn *net.TCPConn) {

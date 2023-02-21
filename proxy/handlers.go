@@ -1,9 +1,13 @@
 package proxy
 
 import (
+	// "encoding/json"
 	"log"
 	"regexp"
 	"strings"
+	"strconv"
+
+	"github.com/INFURA/go-ethlibs/jsonrpc"
 
 	"github.com/Djadih/go-quai-stratum/rpc"
 	"github.com/Djadih/go-quai-stratum/util"
@@ -16,12 +20,20 @@ var hashPattern = regexp.MustCompile("^0x[0-9a-f]{64}$")
 var workerPattern = regexp.MustCompile("^[0-9a-zA-Z-_]{1,8}$")
 
 // Stratum
-func (s *ProxyServer) handleLoginRPC(cs *Session, params []string, id string) (bool, *ErrorReply) {
+func (s *ProxyServer) handleLoginRPC(cs *Session, params jsonrpc.Params) (bool, *ErrorReply) {
 	if len(params) == 0 {
 		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
 	}
+	// var addy string
+	// addy, err := jsonrpc.Unmarshal(params[0])
+	// params[0].UnmarshalJSON([]byte(addy))
+	// addy, err := jsonrpc.Unmarshal(params[0])
+	addy, err := strconv.Unquote(string(params[0]))
+	if err != nil {
+		log.Printf("%v", err)
+	}
 
-	login := strings.ToLower(params[0])
+	login := strings.ToLower(addy)
 	if !util.IsValidHexAddress(login) {
 		return false, &ErrorReply{Code: -1, Message: "Invalid login"}
 	}
