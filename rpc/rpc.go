@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	// "log"
 	"math/big"
 	"net/http"
 	// "strconv"
@@ -210,8 +210,8 @@ func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) (error) {
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*types.Header, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height)}
-	log.Print("GetBlockByHeight params ")
-	log.Println(params)
+	// log.Print("GetBlockByHeight params ")
+	// log.Println(params)
 	return r.getBlockBy("quai_getHeaderByNumber", params)
 }
 
@@ -228,11 +228,11 @@ func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*typ
 // The most important function for now.
 func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Header, error) {
 	rpcResp, err := r.doPost(r.Url, method, params)
-	log.Println(r.Url)
+	// log.Println(r.Url)
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(*rpcResp.Result))
+	// log.Println(string(*rpcResp.Result))
 	if rpcResp.Result != nil {
 		var reply *types.Header
 		err = json.Unmarshal(*rpcResp.Result, &reply)

@@ -72,7 +72,7 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 	s.setDeadline(cs.conn)
 	for {
 		data, isPrefix, err := connbuff.ReadLine()
-		log.Println("Received TCP data from client")
+		// log.Println("Received TCP data from client")
 		if isPrefix {
 			log.Printf("Socket flood detected from %s", cs.ip)
 			s.policy.BanClient(cs.ip)
@@ -132,7 +132,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 			return cs.sendTCPError(*jsonrpc.NewError(0, errReply.Message))
 		}
 		header_rep := rpc.RPCMarshalHeader(reply)
-		log.Println(header_rep)
+		// log.Println(header_rep)
 		cs.sendTCPResult(req.ID.String(), header_rep)
 		return nil
 	case "quai_receiveMinedHeader":

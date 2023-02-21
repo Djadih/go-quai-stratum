@@ -65,9 +65,9 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 
 	// pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
-	for _, s := range s.config.Proxy.Difficulty {
-		log.Println(s)
-	}
+	// for _, s := range s.config.Proxy.Difficulty {
+	// 	log.Println(s)
+	// }
 	// pendingReply.Difficulty = reply.DifficultyArray()
 	// pendingReply.Difficulty = hexutil.EncodeBig(s.config.Proxy.Difficulty)
 
