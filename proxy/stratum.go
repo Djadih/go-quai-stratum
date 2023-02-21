@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	MaxReqSize = 4096
+	MaxReqSize = 8192
 )
 
 func (s *ProxyServer) ListenTCP() {
@@ -71,7 +71,6 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 	connbuff := bufio.NewReaderSize(cs.conn, MaxReqSize)
 	s.setDeadline(cs.conn)
 	for {
-		time.Sleep(1000)
 		data, isPrefix, err := connbuff.ReadLine()
 		log.Println("Received TCP data from client")
 		if isPrefix {
@@ -142,7 +141,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 		// err := json.Unmarshal(req.Params, &received_header)
 		err := json.Unmarshal(req.Params[0], &received_header)
 		if err != nil {
-			log.Println("Unable to decode header from ", cs.ip)
+			log.Printf("Unable to decode header from %v. Err: %v", cs.ip, err)
 			// log.Println("Malformed stratum request params from", cs.ip)
 			return err
 		}
@@ -151,8 +150,6 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 		// if errReply != nil {
 			// return cs.sendTCPError(req.Id, errReply)
 		// }
-	case "eth_submitHashrate":
-		return cs.sendTCPResult(req.ID.String(), true)
 	default:
 		// errReply := s.handleUnknownRPC(cs, req.Method)
 		return cs.sendTCPError(*jsonrpc.MethodNotFound(req))
@@ -182,12 +179,19 @@ func (cs *Session) sendTCPResult(id string, result interface{}) error {
 	return cs.enc.Encode(&message)
 }
 
-func (cs *Session) pushNewJob(result interface{}) error {
+func (cs *Session) pushNewJob(result *types.Header) error {
 	cs.Lock()
 	defer cs.Unlock()
 	// FIXME: Temporarily add ID for Claymore compliance
-	message := JSONPushMessage{Version: "2.0", Result: result, Id: 0}
-	return cs.enc.Encode(&message)
+	// message := JSONPushMessage{Version: "2.0", Result: result, Id: 0}
+	message := jsonrpc.NewResponse()
+	message.ID = jsonrpc.StringID("fuck me")
+	message.Result = rpc.RPCMarshalHeader(result)
+	// msg, _ := message.MarshalJSON()
+	// cs.conn.Write(msg)
+	// cs.conn.Write([]byte("\n"))
+	return cs.enc.Encode(message)
+	return nil
 }
 
 func (cs *Session) sendTCPError(err jsonrpc.Error) error {
@@ -243,7 +247,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 		bcast <- n
 
 		go func(cs *Session) {
-			err := cs.pushNewJob(&reply)
+			err := cs.pushNewJob(reply)
 			<-bcast
 			if err != nil {
 				log.Printf("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)

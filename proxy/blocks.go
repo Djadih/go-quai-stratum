@@ -60,6 +60,8 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	// No need to update, we have fresh job
 	if t != nil && t.Header == pendingHeader {
 		return
+	} else if t != nil {
+		t.Header = pendingHeader
 	}
 
 	// pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
