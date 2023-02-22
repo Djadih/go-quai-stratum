@@ -24,19 +24,16 @@ func (s *ProxyServer) handleLoginRPC(cs *Session, params jsonrpc.Params) (bool, 
 	if len(params) == 0 {
 		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
 	}
-	// var addy string
-	// addy, err := jsonrpc.Unmarshal(params[0])
-	// params[0].UnmarshalJSON([]byte(addy))
-	// addy, err := jsonrpc.Unmarshal(params[0])
+
 	addy, err := strconv.Unquote(string(params[0]))
 	if err != nil {
 		log.Printf("%v", err)
 	}
-
 	login := strings.ToLower(addy)
 	if !util.IsValidHexAddress(login) {
 		return false, &ErrorReply{Code: -1, Message: "Invalid login"}
 	}
+
 	if !s.policy.ApplyLoginPolicy(login, cs.ip) {
 		return false, &ErrorReply{Code: -1, Message: "You are blacklisted"}
 	}
@@ -51,20 +48,7 @@ func (s *ProxyServer) handleGetWorkRPC(cs *Session) (*types.Header, *ErrorReply)
 	if t == nil || t.Header == nil || s.isSick() {
 		return nil, &ErrorReply{Code: 0, Message: "Work not ready"}
 	}
-	// return []string{t.Header, t.Seed, s.diff}, nil
 	return t.Header, nil
-}
-
-// Stratum
-func (s *ProxyServer) handleTCPSubmitRPC(cs *Session, id string, params []string) (bool, *ErrorReply) {
-	s.sessionsMu.RLock()
-	_, ok := s.sessions[cs]
-	s.sessionsMu.RUnlock()
-
-	if !ok {
-		return false, &ErrorReply{Code: 25, Message: "Not subscribed"}
-	}
-	return s.handleSubmitRPC(cs, cs.login, id, params)
 }
 
 func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []string) (bool, *ErrorReply) {

@@ -2,17 +2,13 @@ package rpc
 
 import (
 	"bytes"
-	// "crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	// "log"
 	"math/big"
 	"net/http"
 
-	// "strconv"
-	// "strings"
 	"log"
 	"sync"
 
@@ -20,6 +16,7 @@ import (
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 	"github.com/dominant-strategies/go-quai/core/types"
+	"github.com/dominant-strategies/go-quai/quaiclient"
 
 	"github.com/Djadih/go-quai-stratum/util"
 )
@@ -33,21 +30,6 @@ type RPCClient struct {
 	successRate int
 	client      *http.Client
 }
-
-// type GetBlockReply struct {
-// 	Number       string   `json:"number"`
-// 	Hash         string   `json:"hash"`
-// 	Nonce        string   `json:"nonce"`
-// 	Miner        string   `json:"miner"`
-// 	Difficulty   string   `json:"difficulty"`
-// 	GasLimit     string   `json:"gasLimit"`
-// 	GasUsed      string   `json:"gasUsed"`
-// 	Timestamp    string   `json:"timestamp"`
-// 	Transactions []Tx     `json:"transactions"`
-// 	Uncles       []string `json:"uncles"`
-// 	// https://github.com/ethereum/EIPs/issues/95
-// 	SealFields []string `json:"sealFields"`
-// }
 
 type GetBlockReply struct {
 	ParentHash    []common.Hash    `json:"parentHash"          gencodec:"required"`
@@ -71,11 +53,6 @@ type GetBlockReply struct {
 	Nonce         types.BlockNonce `json:"nonce"`
 	Hash          common.Hash      `json:"hash"`
 }
-
-// type GetBlockReplyPart struct {
-// 	Number     []string `json:"number"`
-// 	Difficulty []string `json:"difficulty"`
-// }
 
 const receiptStatusSuccessful = "0x1"
 
@@ -110,53 +87,6 @@ type JSONRpcResp struct {
 	Error  map[string]interface{} `json:"error"`
 }
 
-// RPCMarshalHeader converts the given header to the RPC output .
-func RPCMarshalHeader(head *types.Header) map[string]interface{} {
-	result := map[string]interface{}{
-		"hash":                head.Hash(),
-		"parentHash":          head.ParentHashArray(),
-		"nonce":               head.Nonce(),
-		"sha3Uncles":          head.UncleHashArray(),
-		"logsBloom":           head.BloomArray(),
-		"stateRoot":           head.RootArray(),
-		"miner":               head.CoinbaseArray(),
-		"extraData":           hexutil.Bytes(head.Extra()),
-		"size":                hexutil.Uint64(head.Size()),
-		"timestamp":           hexutil.Uint64(head.Time()),
-		"transactionsRoot":    head.TxHashArray(),
-		"receiptsRoot":        head.ReceiptHashArray(),
-		"extTransactionsRoot": head.EtxHashArray(),
-		"extRollupRoot":       head.EtxRollupHashArray(),
-		"manifestHash":        head.ManifestHashArray(),
-		"location":            head.Location(),
-	}
-
-	number := make([]*hexutil.Big, common.HierarchyDepth)
-	difficulty := make([]*hexutil.Big, common.HierarchyDepth)
-	gasLimit := make([]hexutil.Uint, common.HierarchyDepth)
-	gasUsed := make([]hexutil.Uint, common.HierarchyDepth)
-	for i := 0; i < common.HierarchyDepth; i++ {
-		number[i] = (*hexutil.Big)(head.Number(i))
-		difficulty[i] = (*hexutil.Big)(head.Difficulty(i))
-		gasLimit[i] = hexutil.Uint(head.GasLimit(i))
-		gasUsed[i] = hexutil.Uint(head.GasUsed(i))
-	}
-	result["number"] = number
-	result["difficulty"] = difficulty
-	result["gasLimit"] = gasLimit
-	result["gasUsed"] = gasUsed
-
-	if head.BaseFee() != nil {
-		results := make([]*hexutil.Big, common.HierarchyDepth)
-		for i := 0; i < common.HierarchyDepth; i++ {
-			results[i] = (*hexutil.Big)(head.BaseFee(i))
-		}
-		result["baseFeePerGas"] = results
-	}
-
-	return result
-}
-
 func NewRPCClient(name, url, timeout string) *RPCClient {
 	rpcClient := &RPCClient{Name: name, Url: url}
 	timeoutIntv := util.MustParseDuration(timeout)
@@ -179,37 +109,11 @@ func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
 }
 
 func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) error {
-	// var received_header *types.Header
-	// err := json.Unmarshal(req.Params, &received_header)
-	// if err != nil {
-	// 	log.Println("Unable to decode header from ", cs.ip)
-	// 	// log.Println("Malformed stratum request params from", cs.ip)
-	// 	return err
-	// }
-
-	header_msg := RPCMarshalHeader(mined_header)
+	header_msg := quaiclient.RPCMarshalHeader(mined_header)
 	_, err := r.doPost(r.Url, "quai_receiveMinedHeader", header_msg)
 
 	return err
 }
-
-// func (r *RPCClient) GetPendingBlock() (*types.Header, error) {
-// 	rpcResp, err := r.doPost(r.Url, "quai_getHeaderByNumber", []interface{}{"pending", false})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// log.Print(rpcResp.Result)
-// 	if rpcResp.Result != nil {
-// 		var reply *types.Header
-// 		err = json.Unmarshal(*rpcResp.Result, &reply)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		return reply, err
-// 	}
-// 	return nil, nil
-// }
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*types.Header, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height)}

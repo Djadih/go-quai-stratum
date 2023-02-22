@@ -5,9 +5,6 @@ import (
 	"log"
 	"math/big"
 
-	// "strconv"
-	// "strings"
-	// "errors"
 	"sync"
 
 	"github.com/dominant-strategies/go-quai/common"
