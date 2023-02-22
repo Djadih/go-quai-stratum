@@ -96,13 +96,12 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 	return rpcClient
 }
 
-func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
+func (r *RPCClient) GetWork() (*types.Header, error) {
 	rpcResp, err := r.doPost(r.Url, "quai_getPendingHeader", nil)
 	if err != nil {
 		log.Fatalf("Unable to post data while getting pending header: %v", err)
 		return nil, err
 	}
-	// var reply []string
 	var reply *types.Header
 	err = json.Unmarshal(*rpcResp.Result, &reply)
 	return reply, err
@@ -117,8 +116,6 @@ func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) error {
 
 func (r *RPCClient) GetBlockByHeight(height int64) (*types.Header, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height)}
-	// log.Print("GetBlockByHeight params ")
-	// log.Println(params)
 	return r.getBlockBy("quai_getHeaderByNumber", params)
 }
 
@@ -132,14 +129,11 @@ func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*typ
 	return r.getBlockBy("eth_getUncleByBlockNumberAndIndex", params)
 }
 
-// The most important function for now.
 func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Header, error) {
 	rpcResp, err := r.doPost(r.Url, method, params)
-	// log.Println(r.Url)
 	if err != nil {
 		return nil, err
 	}
-	// log.Println(string(*rpcResp.Result))
 	if rpcResp.Result != nil {
 		var reply *types.Header
 		err = json.Unmarshal(*rpcResp.Result, &reply)
@@ -159,17 +153,6 @@ func (r *RPCClient) getBlockBy(method string, params []interface{}) (*types.Head
 // 		return reply, err
 // 	}
 // 	return nil, nil
-// }
-
-// // submit block
-// func (r *RPCClient) ReceiveMinedHeader(params []string) (bool, error) {
-// 	rpcResp, err := r.doPost(r.Url, "quai_receiveMinedHeader", params)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	var reply bool
-// 	err = json.Unmarshal(*rpcResp.Result, &reply)
-// 	return reply, err
 // }
 
 // func (r *RPCClient) GetBalance(address string) (*big.Int, error) {

@@ -15,7 +15,7 @@ import (
 	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
-const txCheckInterval = 5 * time.Secondominant-dominant-strategies
+const txCheckInterval = 5*time.Secondominant - dominant - strategies
 
 type PayoutsConfig struct {
 	Enabled      bool   `json:"enabled"`
