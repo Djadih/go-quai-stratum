@@ -138,9 +138,9 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 		}
 
 		// Send mined header to the relevant go-quai nodes.
-		// Starting with the lowest levels.
+		// Should be synchronous starting with the lowest levels.
 		for i := common.HierarchyDepth - 1; i >= order; i-- {
-			go s.rpc(i).SubmitMinedHeader(received_header)
+			s.rpc(i).SubmitMinedHeader(received_header)
 		}
 
 		return nil
