@@ -1,9 +1,9 @@
 package proxy
 
 import (
-	"github.com/Djadih/go-quai-stratum/api"
-	"github.com/Djadih/go-quai-stratum/policy"
-	"github.com/Djadih/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/api"
+	"github.com/dominant-strategies/go-quai-stratum/policy"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 )
 

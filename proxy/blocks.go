@@ -10,7 +10,7 @@ import (
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/core/types"
 
-	"github.com/Djadih/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 )
 

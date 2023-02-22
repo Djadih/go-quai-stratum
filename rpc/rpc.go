@@ -18,7 +18,7 @@ import (
 	"github.com/dominant-strategies/go-quai/core/types"
 	"github.com/dominant-strategies/go-quai/quaiclient"
 
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
 type RPCClient struct {

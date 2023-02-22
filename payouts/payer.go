@@ -10,12 +10,12 @@ import (
 
 	"github.com/dominant-strategies/go-quai/common/hexutil"
 
-	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/storage"
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
-const txCheckInterval = 5 * time.Second
+const txCheckInterval = 5 * time.Secondominant-dominant-strategies
 
 type PayoutsConfig struct {
 	Enabled      bool   `json:"enabled"`

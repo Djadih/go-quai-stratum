@@ -12,10 +12,10 @@ import (
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/gorilla/mux"
 
-	"github.com/Djadih/go-quai-stratum/policy"
-	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/storage"
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/policy"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
 type ProxyServer struct {

@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
 )
 
 func TestMain(m *testing.M) {

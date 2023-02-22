@@ -15,9 +15,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron"
 
-	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/storage"
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
 type ApiConfig struct {

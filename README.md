@@ -25,7 +25,7 @@ First install  [core-geth](https://github.com/etclabscore/core-geth/releases).
 Clone & compile:
 
     git config --global http.https://gopkg.in.followRedirects true
-    git clone https://github.com/Djadih/go-quai-stratum.git
+    git clone https://github.com/dominant-strategies/go-quai-stratum.git
     cd go-etcstratum
     make all
 

@@ -11,7 +11,7 @@ import (
 
 	"gopkg.in/redis.v3"
 
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 )
 
 type Config struct {

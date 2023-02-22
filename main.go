@@ -11,9 +11,9 @@ import (
 
 	"github.com/J-A-M-P-S/structs"
 
-	"github.com/Djadih/go-quai-stratum/api"
-	"github.com/Djadih/go-quai-stratum/proxy"
-	"github.com/Djadih/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/api"
+	"github.com/dominant-strategies/go-quai-stratum/proxy"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
 )
 
 var cfg proxy.Config

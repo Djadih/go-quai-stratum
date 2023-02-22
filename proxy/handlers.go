@@ -9,8 +9,8 @@ import (
 
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 
-	"github.com/Djadih/go-quai-stratum/rpc"
-	"github.com/Djadih/go-quai-stratum/util"
+	"github.com/dominant-strategies/go-quai-stratum/rpc"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
