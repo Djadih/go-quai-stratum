@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/dominant-strategies/go-quai/common"
 	"github.com/gorilla/mux"
 
 	"github.com/Djadih/go-quai-stratum/policy"
@@ -20,9 +21,10 @@ import (
 )
 
 type ProxyServer struct {
-	config             *Config
-	blockTemplate      atomic.Value
-	upstreams          map[string]*rpc.RPCClient
+	config        *Config
+	blockTemplate atomic.Value
+	// upstreams        map[string]*rpc.RPCClient
+	upstreams          []*rpc.RPCClient
 	backend            *storage.RedisClient
 	diff               string
 	policy             *policy.PolicyServer
@@ -60,8 +62,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 		log.Fatal("You must set instance name")
 	}
 	policy := policy.Start(&cfg.Proxy.Policy, backend)
-	
-	proxy := &ProxyServer{config: cfg, backend: backend, policy: policy}
+
+	proxy := &ProxyServer{config: cfg, upstreams: make([]*rpc.RPCClient, 3), backend: backend, policy: policy}
 	proxy.diff = util.GetTargetHex(cfg.Proxy.Difficulty[0])
 
 	// proxy.upstreams = make([]*rpc.RPCClient, len(cfg.Upstream))
@@ -72,39 +74,40 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	// log.Printf("Default upstream: %s => %s", proxy.rpc().Name, proxy.rpc().Url)
 
 	// rpcDaemons := [common.HierarchyDepth]*rpc.RPCClient{}
-	proxy.upstreams = map[string]*rpc.RPCClient{
-		"prime"		:	rpc.NewRPCClient(
-			cfg.Upstream[0].Name,
-			cfg.Upstream[0].Url,
-			cfg.Upstream[0].Timeout,
-		),
-		"region"	:	rpc.NewRPCClient(
-			cfg.Upstream[1].Name,
-			cfg.Upstream[1].Url,
-			cfg.Upstream[1].Timeout,
-		),
-		"zone"		:	rpc.NewRPCClient(
-			cfg.Upstream[2].Name,
-			cfg.Upstream[2].Url,
-			cfg.Upstream[2].Timeout,
-		),
-	}
+	// proxy.upstreams = map[string]*rpc.RPCClient{
+	// 	"prime"		:	rpc.NewRPCClient(
+	// 		cfg.Upstream[0].Name,
+	// 		cfg.Upstream[0].Url,
+	// 		cfg.Upstream[0].Timeout,
+	// 	),
+	// 	"region"	:	rpc.NewRPCClient(
+	// 		cfg.Upstream[1].Name,
+	// 		cfg.Upstream[1].Url,
+	// 		cfg.Upstream[1].Timeout,
+	// 	),
+	// 	"zone"		:	rpc.NewRPCClient(
+	// 		cfg.Upstream[2].Name,
+	// 		cfg.Upstream[2].Url,
+	// 		cfg.Upstream[2].Timeout,
+	// 	),
+	// }
 	// rpcDaemon := settings["BlockUnlocker"].(map[string]interface{})["Daemon"].(string)
 	// rpcDaemon := settings["Upstream"].([]map[string]interface{})[0]["Url"].(string)
 
-	// for level := 0; level < common.HierarchyDepth; level++ {
-	// 	// rpcConfig := settings["Upstream"].([]interface{})[level].(map[string]interface{})
-	// 	// rpcDaemons[level] = rpc.NewRPCClient(
-	// 	// 	rpcConfig["Name"].(string),
-	// 	// 	rpcConfig["Url"].(string),
-	// 	// 	rpcConfig["Timeout"].(string))
-	// 	rpcDaemons[level] = rpc.NewRPCClient(
-	// 		cfg.Upstream[level].Name,
-	// 		cfg.Upstream[level].Url,
-	// 		cfg.Upstream[level].Timeout,
-	// 	)
-	// }
+	for level := 0; level < common.HierarchyDepth; level++ {
+		// rpcConfig := settings["Upstream"].([]interface{})[level].(map[string]interface{})
+		// rpcDaemons[level] = rpc.NewRPCClient(
+		// 	rpcConfig["Name"].(string),
+		// 	rpcConfig["Url"].(string),
+		// 	rpcConfig["Timeout"].(string))
 
+		// Eventually we should verify with the "name" that it's in the correct order.
+		proxy.upstreams[level] = rpc.NewRPCClient(
+			cfg.Upstream[level].Name,
+			cfg.Upstream[level].Url,
+			cfg.Upstream[level].Timeout,
+		)
+	}
 
 	if cfg.Proxy.Stratum.Enabled {
 		proxy.sessions = make(map[*Session]struct{})
@@ -151,7 +154,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			case <-stateUpdateTimer.C:
 				t := proxy.currentBlockTemplate()
 				if t != nil {
-					rpc := proxy.rpc("zone")
+					rpc := proxy.rpc(common.ZONE_CTX)
 					height := t.Height[2].Int64() - 1
 					prev := height - cfg.BlockTimeWindow
 					if prev < 0 {
@@ -210,7 +213,7 @@ func (s *ProxyServer) Start() {
 	}
 }
 
-func (s *ProxyServer) rpc(level string) *rpc.RPCClient {
+func (s *ProxyServer) rpc(level int) *rpc.RPCClient {
 	// i := atomic.LoadInt32(&s.upstream)
 	return s.upstreams[level]
 }
@@ -293,6 +296,7 @@ func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcRe
 		}
 		cs.sendResult(req.Id, &reply)
 	case "quai_receiveMinedHeader":
+		// This is never hit.
 		if req.Params != nil {
 			var params []string
 			err := json.Unmarshal(req.Params, &params)

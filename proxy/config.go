@@ -33,15 +33,15 @@ type Config struct {
 }
 
 type Proxy struct {
-	Enabled              bool   `json:"enabled"`
-	Listen               string `json:"listen"`
-	LimitHeadersSize     int    `json:"limitHeadersSize"`
-	LimitBodySize        int64  `json:"limitBodySize"`
-	BehindReverseProxy   bool   `json:"behindReverseProxy"`
-	BlockRefreshInterval string `json:"blockRefreshInterval"`
-	Difficulty           []*hexutil.Big  `json:"difficulty"`
-	StateUpdateInterval  string `json:"stateUpdateInterval"`
-	HashrateExpiration   string `json:"hashrateExpiration"`
+	Enabled              bool           `json:"enabled"`
+	Listen               string         `json:"listen"`
+	LimitHeadersSize     int            `json:"limitHeadersSize"`
+	LimitBodySize        int64          `json:"limitBodySize"`
+	BehindReverseProxy   bool           `json:"behindReverseProxy"`
+	BlockRefreshInterval string         `json:"blockRefreshInterval"`
+	Difficulty           []*hexutil.Big `json:"difficulty"`
+	StateUpdateInterval  string         `json:"stateUpdateInterval"`
+	HashrateExpiration   string         `json:"hashrateExpiration"`
 
 	Policy policy.Config `json:"policy"`
 

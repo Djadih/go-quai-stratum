@@ -3,6 +3,7 @@ package proxy
 import (
 	"bufio"
 	"encoding/json"
+
 	// "errors"
 	"io"
 	"log"
@@ -12,6 +13,9 @@ import (
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 	"github.com/dominant-strategies/go-quai-stratum/rpc"
 	"github.com/dominant-strategies/go-quai-stratum/util"
+
+	// "github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
@@ -136,20 +140,24 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 		cs.sendTCPResult(req.ID.String(), header_rep)
 		return nil
 	case "quai_receiveMinedHeader":
-		// var params []string
 		var received_header *types.Header
-		// err := json.Unmarshal(req.Params, &received_header)
 		err := json.Unmarshal(req.Params[0], &received_header)
 		if err != nil {
 			log.Printf("Unable to decode header from %v. Err: %v", cs.ip, err)
 			// log.Println("Malformed stratum request params from", cs.ip)
 			return err
 		}
-		return s.rpc("zone").SubmitMinedHeader(received_header)
-		// reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, received_header)
-		// if errReply != nil {
-			// return cs.sendTCPError(req.Id, errReply)
-		// }
+		order, err := GetDifficultyOrder(received_header)
+		if err != nil {
+			log.Fatalf("Unable to get order of mined headr: %v", err)
+			return err
+		}
+
+		for i := common.HierarchyDepth-1; i >= order; i-- {
+			go s.rpc(i).SubmitMinedHeader(received_header)
+		}
+
+		return nil
 	default:
 		// errReply := s.handleUnknownRPC(cs, req.Method)
 		return cs.sendTCPError(*jsonrpc.MethodNotFound(req))
@@ -171,9 +179,9 @@ func (cs *Session) sendTCPResult(id string, result interface{}) error {
 
 	// message := JSONRpcResp{Id: id, Version: "2.0", Error: nil, Result: result}
 	message := jsonrpc.Response{
-		ID:		jsonrpc.StringID(string(id)),
-		Result:	result,
-		Error:	nil,
+		ID:     jsonrpc.StringID(string(id)),
+		Result: result,
+		Error:  nil,
 	}
 
 	return cs.enc.Encode(&message)
@@ -201,7 +209,7 @@ func (cs *Session) sendTCPError(err jsonrpc.Error) error {
 	// message := JSONRpcResp{Id: id, Version: "2.0", Error: reply}
 	// err := cs.enc.Encode(&message)
 	// if err != nil {
-		// return err
+	// return err
 	// }
 	// return errors.New(reply.Message)
 	return nil

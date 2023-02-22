@@ -4,8 +4,8 @@ import (
 	// "encoding/json"
 	"log"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 
@@ -99,36 +99,36 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 
 		return false, &ErrorReply{Code: -1, Message: "Malformed PoW result"}
 	}
-	/*	
-	t := s.currentBlockTemplate()
+	/*
+		t := s.currentBlockTemplate()
 
-	
-	exist, validShare := s.processShare(login, id, cs.ip, t, params)
 
-	ok := s.policy.ApplySharePolicy(cs.ip, !exist && validShare)
+		exist, validShare := s.processShare(login, id, cs.ip, t, params)
 
-	if exist {
-		log.Printf("Duplicate share from %s@%s %v", login, cs.ip, params)
-		return false, &ErrorReply{Code: 22, Message: "Duplicate share"}
-		if !ok {
-			return false, &ErrorReply{Code: 23, Message: "Invalid share"}
+		ok := s.policy.ApplySharePolicy(cs.ip, !exist && validShare)
+
+		if exist {
+			log.Printf("Duplicate share from %s@%s %v", login, cs.ip, params)
+			return false, &ErrorReply{Code: 22, Message: "Duplicate share"}
+			if !ok {
+				return false, &ErrorReply{Code: 23, Message: "Invalid share"}
+			}
+			return false, nil
 		}
-		return false, nil
-	}
 
-	if !validShare {
-		log.Printf("Invalid share from %s@%s", login, cs.ip)
-		// Bad shares limit reached, return error and close
-		if !ok {
-			return false, &ErrorReply{Code: 23, Message: "Invalid share"}
+		if !validShare {
+			log.Printf("Invalid share from %s@%s", login, cs.ip)
+			// Bad shares limit reached, return error and close
+			if !ok {
+				return false, &ErrorReply{Code: 23, Message: "Invalid share"}
+			}
+			return false, nil
 		}
-		return false, nil
-	}
-	log.Printf("Valid share from %s@%s", login, cs.ip)
+		log.Printf("Valid share from %s@%s", login, cs.ip)
 
-	if !ok {
-		return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
-	}
+		if !ok {
+			return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
+		}
 	*/
 	return true, nil
 }

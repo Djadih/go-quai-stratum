@@ -272,7 +272,6 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 		return
 	}
 
-
 	current, err := u.rpc.GetPendingBlock()
 	if err != nil {
 		u.halt = true

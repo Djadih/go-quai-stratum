@@ -13,8 +13,8 @@ import (
 
 	// "strconv"
 	// "strings"
-	"sync"
 	"log"
+	"sync"
 
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 	"github.com/dominant-strategies/go-quai/common"
@@ -60,8 +60,8 @@ type GetBlockReply struct {
 	ManifestHash  []common.Hash    `json:"manifestHash"        gencodec:"required"`
 	ReceiptHash   []common.Hash    `json:"receiptsRoot"        gencodec:"required"`
 	Bloom         []types.Bloom    `json:"logsBloom"           gencodec:"required"`
-	Difficulty    []big.Int	       `json:"difficulty"          gencodec:"required"`
-	Number        []big.Int	       `json:"number"              gencodec:"required"`
+	Difficulty    []big.Int        `json:"difficulty"          gencodec:"required"`
+	Number        []big.Int        `json:"number"              gencodec:"required"`
 	GasLimit      []hexutil.Uint64 `json:"gasLimit"            gencodec:"required"`
 	GasUsed       []hexutil.Uint64 `json:"gasUsed"             gencodec:"required"`
 	BaseFee       []*hexutil.Big   `json:"baseFeePerGas"       gencodec:"required"`
@@ -178,7 +178,7 @@ func (r *RPCClient) GetWork() (*types.Header, error) { //GetPendingHeader()
 	return reply, err
 }
 
-func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) (error) {
+func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) error {
 	// var received_header *types.Header
 	// err := json.Unmarshal(req.Params, &received_header)
 	// if err != nil {
@@ -186,7 +186,7 @@ func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) (error) {
 	// 	// log.Println("Malformed stratum request params from", cs.ip)
 	// 	return err
 	// }
-	
+
 	header_msg := RPCMarshalHeader(mined_header)
 	_, err := r.doPost(r.Url, "quai_receiveMinedHeader", header_msg)
 
@@ -205,8 +205,6 @@ func (r *RPCClient) SubmitMinedHeader(mined_header *types.Header) (error) {
 // 		if err != nil {
 // 			return nil, err
 // 		}
-
-
 
 // 		return reply, err
 // 	}
@@ -380,7 +378,6 @@ func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSON
 
 	var rpcResp *JSONRpcResp
 	err = json.NewDecoder(resp.Body).Decode(&rpcResp)
-	log.Println(resp.Body)
 	if err != nil {
 		r.markSick()
 		return nil, err
