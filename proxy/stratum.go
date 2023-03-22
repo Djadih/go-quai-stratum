@@ -8,12 +8,14 @@ import (
 	"io"
 	"log"
 	"net"
-	"time"
+
+	// "time"
 
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 	"github.com/dominant-strategies/go-quai-stratum/util"
 
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/common/hexutil"
 	"github.com/dominant-strategies/go-quai/core/types"
 	"github.com/dominant-strategies/go-quai/quaiclient"
 )
@@ -109,7 +111,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 	// Handle RPC methods
 	switch req.Method {
 	case "quai_submitLogin":
-		_, errReply := s.handleLoginRPC(cs, req.Params)
+		errReply := s.handleLoginRPC(cs, req.Params)
 		if errReply != nil {
 			return cs.sendTCPError(jsonrpc.MethodNotFound(req))
 		}
@@ -160,12 +162,36 @@ func (cs *Session) sendTCPResult(id string, result interface{}) error {
 	return cs.enc.Encode(&message)
 }
 
-func (cs *Session) pushNewJob(result *types.Header) error {
+func (cs *Session) pushNewJob(result *types.Header, target *hexutil.Big) error {
 	cs.Lock()
 	defer cs.Unlock()
 	// FIXME: Temporarily add ID for Claymore compliance <- (from J-A-M-P-S fork)
-	message := jsonrpc.NewResponse()
-	message.Result = quaiclient.RPCMarshalHeader(result)
+	// message := jsonrpc.NewResponse()
+	headerBytes, err := json.Marshal(quaiclient.RPCMarshalHeader(result))
+	if err != nil {
+		log.Fatalf("Unable to marshal header: %v", err)
+		return err
+	}
+	if headerBytes == nil {
+
+	}
+	// message := jsonrpc.Notification{
+	// 	JSONRPC: "2.0",
+	// 	Method: "quai_getPendingHeader",
+	// 	Params: headerBytes,
+	// }
+
+	// targetBytes, err := json.Marshal(target.ToInt())
+	targetBytes, err := json.Marshal(0)
+	if err != nil {
+		log.Fatalf("Unable to marshal target: %v", err)
+		return err
+	}
+	// message := append(targetBytes, headerBytes...)
+	message := targetBytes
+	log.Print(message)
+
+	// message.Result = quaiclient.RPCMarshalHeader(result)
 
 	return cs.enc.Encode(message)
 }
@@ -194,7 +220,6 @@ func (s *ProxyServer) broadcastNewJobs() {
 	if t == nil || t.Header == nil || s.isSick() {
 		return
 	}
-	reply := t.Header
 
 	s.sessionsMu.RLock()
 	defer s.sessionsMu.RUnlock()
@@ -202,7 +227,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 	count := len(s.sessions)
 	log.Printf("Broadcasting new job to %v stratum miners", count)
 
-	start := time.Now()
+	// start := time.Now()
 	bcast := make(chan int, 1024)
 	n := 0
 
@@ -211,7 +236,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 		bcast <- n
 
 		go func(cs *Session) {
-			err := cs.pushNewJob(reply)
+			err := cs.pushNewJob(t.Header, s.config.Proxy.Difficulty)
 			<-bcast
 			if err != nil {
 				log.Printf("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)
@@ -219,5 +244,8 @@ func (s *ProxyServer) broadcastNewJobs() {
 			}
 		}(m)
 	}
-	log.Printf("Jobs broadcast finished %s", time.Since(start))
+	if count == 1 {
+		log.Print("here")
+	}
+	// log.Printf("Jobs broadcast finished %s", time.Since(start))
 }

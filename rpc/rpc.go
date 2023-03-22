@@ -198,14 +198,14 @@ func (r *RPCClient) doPost(url string, method string, params interface{}) (*Json
 	return rpcResp, err
 }
 
-func (r *RPCClient) Check() bool {
-	_, err := r.GetWork()
-	if err != nil {
-		return false
-	}
-	r.markAlive()
-	return !r.Sick()
-}
+// func (r *RPCClient) Check() bool {
+// 	_, err := r.GetWork()
+// 	if err != nil {
+// 		return false
+// 	}
+// 	r.markAlive()
+// 	return !r.Sick()
+// }
 
 func (r *RPCClient) Sick() bool {
 	r.RLock()

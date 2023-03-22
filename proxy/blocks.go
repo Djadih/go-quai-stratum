@@ -21,7 +21,6 @@ type BlockTemplate struct {
 	Target     *big.Int
 	Difficulty *big.Int
 	Height     []*big.Int
-	nonces     map[string]bool
 }
 
 type Block struct {
@@ -44,8 +43,9 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		log.Printf("Error while getting pending header (work) on %s: %s", rpc.Name, err)
 		return
 	}
-	// No need to update, we have fresh job
-	if t != nil && t.Header == pendingHeader {
+
+	// Only update if the pending header has changed
+	if t != nil && t.Header != nil && t.Header.NumberArray()[2].Uint64() == pendingHeader.NumberArray()[2].Uint64() {
 		return
 	} else if t != nil {
 		t.Header = pendingHeader
