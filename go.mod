@@ -2,6 +2,8 @@ module github.com/dominant-strategies/go-quai-stratum
 
 go 1.19
 
+replace github.com/dominant-strategies/go-quai => ../../dominant-strategies/go-quai
+
 require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230210163729-fc6ca4235802
 	github.com/J-A-M-P-S/structs v1.1.0
@@ -19,6 +21,7 @@ require (
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/ledgerwatch/secp256k1 v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
@@ -27,4 +30,5 @@ require (
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
 	gopkg.in/bsm/ratelimit.v1 v1.0.0-20170922094635-f56db5e73a5e // indirect
+	lukechampine.com/blake3 v1.1.7 // indirect
 )
