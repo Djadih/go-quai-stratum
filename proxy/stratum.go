@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bufio"
+	"encoding/binary"
 	"encoding/json"
 
 	"fmt"
@@ -167,14 +168,11 @@ func (cs *Session) pushNewJob(result *types.Header, target *hexutil.Big) error {
 	defer cs.Unlock()
 	// FIXME: Temporarily add ID for Claymore compliance <- (from J-A-M-P-S fork)
 	// message := jsonrpc.NewResponse()
-	headerBytes, err := json.Marshal(quaiclient.RPCMarshalHeader(result))
-	if err != nil {
-		log.Fatalf("Unable to marshal header: %v", err)
-		return err
-	}
-	if headerBytes == nil {
-
-	}
+	// headerBytes, err := json.Marshal(quaiclient.RPCMarshalHeader(result))
+	// if err != nil {
+	// 	log.Fatalf("Unable to marshal header: %v", err)
+	// 	return err
+	// }
 	// message := jsonrpc.Notification{
 	// 	JSONRPC: "2.0",
 	// 	Method: "quai_getPendingHeader",
@@ -182,18 +180,40 @@ func (cs *Session) pushNewJob(result *types.Header, target *hexutil.Big) error {
 	// }
 
 	// targetBytes, err := json.Marshal(target.ToInt())
-	targetBytes, err := json.Marshal(0)
+
+	// targetBytes, err := json.Marshal(target.ToInt())
+	// if err != nil {
+	// 	log.Fatalf("Unable to marshal target: %v", err)
+	// 	return err
+	// }
+
+	// targetBytes := target.ToInt().Bytes()
+	// targetBytes := target.ToInt().FillBytes(make([]byte, 32))
+	targetBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(targetBytes, target.ToInt().Uint64())
+	// log.Printf("Bytes written: %v", bytes_written)
+
+	sealHash := result.SealHash().Bytes()
+
+	message := append(targetBytes, sealHash...)
+	message = targetBytes
+	// message := targetBytes
+	// log.Print(message)
+	// log.Print(strconv.FormatInt(target.ToInt().Int64(), 2))
+	// log.Printf("Target Int: %d", target.ToInt().Uint64())
+	// log.Printf("Target: %v", target.String())
+	log.Printf("Message being encoded: %v", message)
+
+	// message.Result = quaiclient.RPCMarshalHeader(result)%
+	bytes_written, err := cs.conn.Write(message)
 	if err != nil {
-		log.Fatalf("Unable to marshal target: %v", err)
+		log.Fatalf("Unable to write to socket: %v", err)
 		return err
 	}
-	// message := append(targetBytes, headerBytes...)
-	message := targetBytes
-	log.Print(message)
-
-	// message.Result = quaiclient.RPCMarshalHeader(result)
-
-	return cs.enc.Encode(message)
+	log.Printf("Bytes written: %v", bytes_written)
+	return nil
+	// return cs.
+	// return cs.enc.Encode(message)
 }
 
 func (cs *Session) sendTCPError(err *jsonrpc.Error) error {
@@ -244,8 +264,8 @@ func (s *ProxyServer) broadcastNewJobs() {
 			}
 		}(m)
 	}
-	if count == 1 {
-		log.Print("here")
-	}
+	// if count == 1 {
+	// 	log.Print("here")
+	// }
 	// log.Printf("Jobs broadcast finished %s", time.Since(start))
 }

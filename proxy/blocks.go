@@ -45,8 +45,9 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 
 	// Only update if the pending header has changed
-	if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash() {
-		return
+	// if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash() {
+	if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash(){
+	  	return
 	} else if t != nil {
 		t.Header = pendingHeader
 	}
