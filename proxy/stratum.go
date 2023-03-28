@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bufio"
-	"encoding/binary"
 	"encoding/json"
 
 	"fmt"
@@ -166,42 +165,18 @@ func (cs *Session) sendTCPResult(id string, result interface{}) error {
 func (cs *Session) pushNewJob(result *types.Header, target *hexutil.Big) error {
 	cs.Lock()
 	defer cs.Unlock()
-	// FIXME: Temporarily add ID for Claymore compliance <- (from J-A-M-P-S fork)
-	// message := jsonrpc.NewResponse()
-	// headerBytes, err := json.Marshal(quaiclient.RPCMarshalHeader(result))
-	// if err != nil {
-	// 	log.Fatalf("Unable to marshal header: %v", err)
-	// 	return err
-	// }
-	// message := jsonrpc.Notification{
-	// 	JSONRPC: "2.0",
-	// 	Method: "quai_getPendingHeader",
-	// 	Params: headerBytes,
-	// }
 
-	// targetBytes, err := json.Marshal(target.ToInt())
-
-	// targetBytes, err := json.Marshal(target.ToInt())
-	// if err != nil {
-	// 	log.Fatalf("Unable to marshal target: %v", err)
-	// 	return err
-	// }
-
-	// targetBytes := target.ToInt().Bytes()
-	// targetBytes := target.ToInt().FillBytes(make([]byte, 32))
-	targetBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(targetBytes, target.ToInt().Uint64())
-	// log.Printf("Bytes written: %v", bytes_written)
+	// targetBytes := make([]byte, 32)
+	// binary.BigEndian.PutUint64(targetBytes, target.ToInt().Uint64())
+	targetBytes := target.ToInt().Bytes()
+	if len(targetBytes) < 8 {
+		targetBytes = append(make([]byte, 8-len(targetBytes)), targetBytes...)
+	}
 
 	sealHash := result.SealHash().Bytes()
 
 	message := append(targetBytes, sealHash...)
-	message = targetBytes
-	// message := targetBytes
-	// log.Print(message)
-	// log.Print(strconv.FormatInt(target.ToInt().Int64(), 2))
-	// log.Printf("Target Int: %d", target.ToInt().Uint64())
-	// log.Printf("Target: %v", target.String())
+
 	log.Printf("Message being encoded: %v", message)
 
 	// message.Result = quaiclient.RPCMarshalHeader(result)%

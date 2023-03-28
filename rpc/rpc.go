@@ -111,6 +111,7 @@ func (r *RPCClient) GetWork() (*types.Header, error) {
 	}
 	var reply *types.Header
 	err = json.Unmarshal(*rpcResp.Result, &reply)
+	// log.Print(quaiclient.RPCMarshalHeader(reply))
 	return reply, err
 }
 
