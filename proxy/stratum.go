@@ -93,6 +93,7 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 			err = req.UnmarshalJSON(data)
 			if err != nil {
 				s.policy.ApplyMalformedPolicy(cs.ip)
+				log.Print(data)
 				log.Printf("Malformed stratum request from %s: %v", cs.ip, err)
 				return err
 			}
@@ -108,6 +109,9 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error {
 	// Handle RPC methods
 	switch req.Method {
+	case "mining.hello":
+		log.Print("received hello")
+		return nil
 	case "quai_submitLogin":
 		errReply := s.handleLoginRPC(cs, req.Params)
 		if errReply != nil {
@@ -130,6 +134,41 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *jsonrpc.Request) error 
 			return err
 		}
 		s.submitMinedHeader(cs, received_header)
+
+		return nil
+	case "quai_getWork":
+		log.Print("Getting work package for external miner")
+		cs.pushNewJob(s.currentBlockTemplate().Header)
+		return nil
+	case "quai_submitWork":
+		// Receives nonce, hash, and digest.
+		var (
+			received_nonce    types.BlockNonce
+			received_mixHash  common.Hash
+			received_sealHash common.Hash
+		)
+
+		log.Printf("Received work")
+
+		err := json.Unmarshal(req.Params[0], &received_nonce)
+		if err != nil {
+			log.Printf("Unable to decode nonce from %v. Err: %v", cs.ip, err)
+			return err
+		}
+
+		err = json.Unmarshal(req.Params[1], &received_mixHash)
+		if err != nil {
+			log.Printf("Unable to decode hash from %v. Err: %v", cs.ip, err)
+			return err
+		}
+
+		err = json.Unmarshal(req.Params[2], &received_sealHash)
+		if err != nil {
+			log.Printf("Unable to decode digest from %v. Err: %v", cs.ip, err)
+			return err
+		}
+
+		log.Printf("finished receive work")
 
 		return nil
 	case "quai_rawHeader":
@@ -171,11 +210,11 @@ func (cs *Session) sendTCPResult(id string, result interface{}) error {
 	return cs.enc.Encode(&message)
 }
 
-func (cs *Session) pushNewJob(result *types.Header, target *big.Int) error {
+func (cs *Session) pushNewJob(header *types.Header) error {
 	cs.Lock()
 	defer cs.Unlock()
 
-	workPackage, err := consensus.MakeWork(result)
+	workPackage, err := consensus.MakeWork(header)
 	if err != nil {
 		log.Printf("Unable to make work: %v", err)
 		return err
@@ -233,7 +272,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 
 		go func(cs *Session) {
 
-			err := cs.pushNewJob(t.Header, t.Target)
+			err := cs.pushNewJob(t.Header)
 			<-bcast
 			if err != nil {
 				log.Printf("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)
@@ -244,7 +283,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 }
 
 func (cs *Session) sendNewJob(header *types.Header, target *big.Int) {
-	err := cs.pushNewJob(header, target)
+	err := cs.pushNewJob(header)
 	if err != nil {
 		log.Printf("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)
 	}
