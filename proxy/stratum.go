@@ -247,7 +247,7 @@ func (cs *Session) sendNewJob(header *types.Header, target *big.Int) {
 }
 
 func (s *ProxyServer) submitMinedHeader(cs *Session, header *types.Header) error {
-	order, err := header.CalcOrder()
+	_, order, err := s.engine.CalcOrder(header)
 	if err != nil {
 		log.Print("Received header does not achieve minimum difficulty. Rejecting.")
 		return err
