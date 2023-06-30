@@ -14,6 +14,7 @@ import (
 	"github.com/INFURA/go-ethlibs/jsonrpc"
 	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/consensus"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
@@ -174,12 +175,15 @@ func (cs *Session) pushNewJob(result *types.Header, target *big.Int) error {
 	cs.Lock()
 	defer cs.Unlock()
 
-	targetBytes := make([]byte, 32)
-	target.FillBytes(targetBytes)
+	workPackage, err := consensus.MakeWork(result)
+	if err != nil {
+		log.Printf("Unable to make work: %v", err)
+		return err
+	}
 
-	message := append(targetBytes, result.SealHash().Bytes()...)
+	message := strings.Join(workPackage[:], "")
 
-	bytes_written, err := cs.conn.Write(message)
+	bytes_written, err := cs.conn.Write([]byte(message))
 	if err != nil {
 		log.Fatalf("Unable to write to socket: %v", err)
 		return err
