@@ -173,6 +173,12 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 		mixHash, _ := s.engine.ComputePowLight(header)
 		header.SetMixHash(mixHash)
 
+		log.Printf("------------------")
+		log.Printf("Received a block")
+		log.Printf("SealHash: 0x%0x", header.SealHash())
+		log.Printf("Target: 0x%0x", s.currentBlockTemplate().Target)
+		log.Printf("------------------")
+
 		err = s.submitMinedHeader(cs, header)
 		if err != nil {
 			log.Printf("Error submitting header: %v", err)
@@ -268,7 +274,11 @@ func (s *ProxyServer) broadcastNewJobs() {
 	defer s.sessionsMu.RUnlock()
 
 	count := len(s.sessions)
+	log.Printf("------------------ ---")
 	log.Printf("Broadcasting new job to %v stratum miners", count)
+	log.Printf("SealHash: 0x%0x", t.Header.SealHash())
+	log.Printf("Target: 0x%0x", t.Target)
+	log.Printf("------------------ ---")
 
 	bcast := make(chan int, 1024)
 	n := 0

@@ -74,7 +74,6 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			false,
 		),
 	}
-	proxy.diff = util.GetTargetHex(cfg.Proxy.Difficulty)
 
 	for level := 0; level < common.HierarchyDepth; level++ {
 		// Eventually we should verify with the "name" that it's in the correct order.
