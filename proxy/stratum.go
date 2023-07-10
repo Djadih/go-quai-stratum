@@ -13,6 +13,7 @@ import (
 
 	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/consensus"
 	"github.com/dominant-strategies/go-quai/core/types"
 )
 
@@ -107,6 +108,7 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 
 		if len(data) > 1 {
 			var req Request
+			log.Printf("Received: %s", string(data))
 			err := json.Unmarshal(data, &req)
 			if err != nil {
 				return fmt.Errorf("error decoding JSON: %v", err)
@@ -170,13 +172,18 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 		}
 
 		header.SetNonce(types.BlockNonce(nonce))
-		mixHash, _ := s.engine.ComputePowLight(header)
-		header.SetMixHash(mixHash)
+		// mixHash, _ := s.engine.ComputePowLight(header)
+		mixHash, err := hex.DecodeString(req.Params.([]interface{})[3].(string))
+		if err != nil {
+			log.Printf("Error decoding mixHash: %v", err)
+			return err
+		}
+		header.SetMixHash(common.Hash(mixHash))
 
 		log.Printf("------------------")
 		log.Printf("Received a block")
-		log.Printf("SealHash: 0x%0x", header.SealHash())
-		log.Printf("Target: 0x%0x", s.currentBlockTemplate().Target)
+		log.Printf("SealHash: %s", header.SealHash())
+		log.Printf("Target: %#066x", consensus.DifficultyToTarget(header.Difficulty()))
 		log.Printf("------------------")
 
 		err = s.submitMinedHeader(cs, header)
@@ -276,8 +283,8 @@ func (s *ProxyServer) broadcastNewJobs() {
 	count := len(s.sessions)
 	log.Printf("------------------ ---")
 	log.Printf("Broadcasting new job to %v stratum miners", count)
-	log.Printf("SealHash: 0x%0x", t.Header.SealHash())
-	log.Printf("Target: 0x%0x", t.Target)
+	log.Printf("SealHash: %s", t.Header.SealHash())
+	log.Printf("Target: %#066x", consensus.DifficultyToTarget(t.Header.Difficulty()))
 	log.Printf("------------------ ---")
 
 	bcast := make(chan int, 1024)
