@@ -163,38 +163,43 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 		return s.handleLoginRPC(cs, *req)
 
 	case "mining.submit":
+		respones := Response{
+			ID:     req.Id,
+			Result: true,
+		}
 		header := s.currentBlockTemplate().Header
 
 		nonce, err := hex.DecodeString(req.Params.([]interface{})[1].(string))
 		if err != nil {
 			log.Printf("Error decoding nonce: %v", err)
-			return err
+			return cs.enc.Encode(&respones)
 		}
 
 		header.SetNonce(types.BlockNonce(nonce))
-		// mixHash, _ := s.engine.ComputePowLight(header)
-		mixHash, err := hex.DecodeString(req.Params.([]interface{})[3].(string))
+		mixHashReceived := req.Params.([]interface{})[3].(string)
+		mixHash, err := hex.DecodeString(mixHashReceived)
 		if err != nil {
 			log.Printf("Error decoding mixHash: %v", err)
-			return err
+			return cs.enc.Encode(&respones)
 		}
 		header.SetMixHash(common.Hash(mixHash))
 
+		mixHashComputed, powHashComputed := s.engine.ComputePowLight(header)
+
 		log.Printf("------------------")
 		log.Printf("Received a block")
-		log.Printf("SealHash: %s", header.SealHash())
-		log.Printf("Target: %#066x", consensus.DifficultyToTarget(header.Difficulty()))
+		log.Printf("Nonce: %0x", nonce)
+		log.Printf("PowHash Computed: %s", powHashComputed)
+		log.Printf("MixHash Received: 0x%s", mixHashReceived)
+		log.Printf("MixHash Computed: %s", mixHashComputed)
 		log.Printf("------------------")
 
 		err = s.submitMinedHeader(cs, header)
 		if err != nil {
 			log.Printf("Error submitting header: %v", err)
-			return err
+			return cs.enc.Encode(&respones)
 		}
-		respones := Response{
-			ID:     req.Id,
-			Result: true,
-		}
+
 		return cs.enc.Encode(&respones)
 
 	default:
@@ -281,11 +286,11 @@ func (s *ProxyServer) broadcastNewJobs() {
 	defer s.sessionsMu.RUnlock()
 
 	count := len(s.sessions)
-	log.Printf("------------------ ---")
+	log.Printf("++++++++++++++++++")
 	log.Printf("Broadcasting new job to %v stratum miners", count)
 	log.Printf("SealHash: %s", t.Header.SealHash())
 	log.Printf("Target: %#066x", consensus.DifficultyToTarget(t.Header.Difficulty()))
-	log.Printf("------------------ ---")
+	log.Printf("++++++++++++++++++")
 
 	bcast := make(chan int, 1024)
 	n := 0
