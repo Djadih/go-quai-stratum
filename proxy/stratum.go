@@ -224,6 +224,9 @@ func (cs *Session) sendTCPError(err error) {
 }
 
 func (cs *Session) pushNewJob(header *types.Header, target *big.Int) error {
+	// Update target to worker.
+	cs.setMining(common.BytesToHash(target.Bytes()))
+
 	notification := Notification{
 		Method: "mining.notify",
 		Params: []string{
