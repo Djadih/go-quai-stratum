@@ -236,7 +236,7 @@ func (cs *Session) pushNewJob(header *types.Header) error {
 	notification := Notification{
 		Method: "mining.notify",
 		Params: []string{
-			fmt.Sprintf("%x", header.SealHash()),
+			fmt.Sprintf("%x", header.Number(common.ZONE_CTX)),
 			fmt.Sprintf("%x", header.Number(common.ZONE_CTX)),
 			fmt.Sprintf("%x", header.SealHash()),
 			"0",
