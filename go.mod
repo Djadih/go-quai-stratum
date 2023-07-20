@@ -2,6 +2,8 @@ module github.com/dominant-strategies/go-quai-stratum
 
 go 1.20
 
+replace github.com/dominant-strategies/go-quai => ../go-quai
+
 require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230222175239-ea21e114f25c
 	github.com/J-A-M-P-S/structs v1.1.0
@@ -25,6 +27,7 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
+	github.com/hnlq715/golang-lru v0.4.0 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
