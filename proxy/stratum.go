@@ -42,6 +42,7 @@ func (s *ProxyServer) ListenTCP() {
 	for {
 		conn, err := server.AcceptTCP()
 		if err != nil {
+			log.Printf("Error accepting connection: %v", err)
 			continue
 		}
 		conn.SetKeepAlive(true)
@@ -59,6 +60,7 @@ func (s *ProxyServer) ListenTCP() {
 		go func(cs *Session) {
 			err = s.handleTCPClient(cs)
 			if err != nil {
+				log.Printf("Error handling client: %v", err)
 				s.removeSession(cs)
 				conn.Close()
 			}
