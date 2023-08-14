@@ -82,7 +82,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			nil,
 			false,
 		),
-		updateCh: make(chan *types.Header),
+		updateCh: make(chan *types.Header, 10),
 	}
 	proxy.diff = util.GetTargetHex(cfg.Proxy.Difficulty)
 
@@ -101,6 +101,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 
 	stateUpdateIntv := util.MustParseDuration(cfg.Proxy.StateUpdateInterval)
 	stateUpdateTimer := time.NewTimer(stateUpdateIntv)
+	proxy.fetchBlockTemplate()
+
 
 	go func() {
 		for {
@@ -108,6 +110,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			case <-refreshTimer.C:
 				proxy.fetchBlockTemplate()
 				refreshTimer.Reset(refreshIntv)
+			case newPendingHeader := <-proxy.updateCh:
+				proxy.updateBlockTemplate(newPendingHeader)
 			}
 		}
 	}()
@@ -247,18 +251,21 @@ func (s *ProxyServer) markOk() {
 }
 
 func (s *ProxyServer) fetchBlockTemplate() {
-	t := s.currentBlockTemplate()
 	pendingHeader, err := s.clients[common.ZONE_CTX].GetPendingHeader(context.Background())
 	if err != nil {
 		log.Printf("Error while getting pending header (work) on %s: %s", (*s.upstreams)[common.ZONE_CTX].Name, err)
 		return
 	}
+	s.updateBlockTemplate(pendingHeader)
+}
+
+func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
+	t := s.currentBlockTemplate()
 
 	// Short circuit if the pending header is the same as the current one
 	if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash() {
 		return
 	}
-
 	newTemplate := BlockTemplate{
 		Header: pendingHeader,
 		Target: consensus.DifficultyToTarget(pendingHeader.Difficulty()),
