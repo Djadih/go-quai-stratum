@@ -298,6 +298,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 }
 
 func (s *ProxyServer) submitMinedHeader(cs *Session, header *types.Header) error {
+	log.Printf("Miner submitted a block. Blockhash: %#x", header.Hash())
 	_, order, err := s.engine.CalcOrder(header)
 	if err != nil {
 		return fmt.Errorf("rejecting header: %v", err)
