@@ -110,8 +110,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			case <-refreshTimer.C:
 				proxy.fetchBlockTemplate()
 				refreshTimer.Reset(refreshIntv)
-			case newPendingHeader := <-proxy.updateCh:
-				proxy.updateBlockTemplate(newPendingHeader)
+			// case newPendingHeader := <-proxy.updateCh:
+				// proxy.updateBlockTemplate(newPendingHeader)
 			}
 		}
 	}()
@@ -231,9 +231,9 @@ func (s *ProxyServer) Start() {
 		MaxHeaderBytes: s.config.Proxy.LimitHeadersSize,
 	}
 
-	if _, err := s.clients[common.ZONE_CTX].SubscribePendingHeader(context.Background(), s.updateCh); err != nil {
-		log.Fatal("Failed to subscribe to pending header events: ", err)
-	}
+	// if _, err := s.clients[common.ZONE_CTX].SubscribePendingHeader(context.Background(), s.updateCh); err != nil {
+		// log.Fatal("Failed to subscribe to pending header events: ", err)
+	// }
 
 	err := srv.ListenAndServe()
 	if err != nil {
