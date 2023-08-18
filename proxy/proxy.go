@@ -62,6 +62,28 @@ type Session struct {
 	subscriptionID string
 	Extranonce     string
 	JobDetails     jobDetails
+
+	// Performance
+	connectionTime time.Time
+	lastShareTime time.Time
+	shareCount    atomic.Value
+}
+
+func (cs *Session) RecordNewShare() {
+	cs.shareCount.Store(cs.shareCount.Load().(int) + 1)
+}
+
+func (cs *Session) GetShareCount() uint64 {
+	return cs.shareCount.Load().(uint64)
+}
+
+func (cs *Session) ReportHashrate() {
+	shareCount := cs.GetShareCount()
+	if shareCount == 0 {
+		return
+	}
+	hashrate := float64(shareCount) / time.Since(cs.connectionTime).Seconds()
+	log.Printf("Client %s reported hashrate: %.2f", cs.ip, hashrate)
 }
 
 type SliceClients [common.HierarchyDepth]*ethclient.Client

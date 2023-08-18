@@ -199,6 +199,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 		successResponse := Response{
 			ID: req.Id,
 		}
+		cs.RecordNewShare()
 		return cs.sendMessage(&successResponse)
 
 	default:
