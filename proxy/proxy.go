@@ -21,6 +21,9 @@ import (
 	"github.com/dominant-strategies/go-quai-stratum/policy"
 	"github.com/dominant-strategies/go-quai-stratum/storage"
 	"github.com/dominant-strategies/go-quai-stratum/util"
+
+	lru "github.com/hnlq715/golang-lru"
+	"math/rand"
 )
 
 const (
@@ -38,6 +41,7 @@ type ProxyServer struct {
 	hashrateExpiration time.Duration
 	failsCount         int64
 	engine             consensus.Engine
+	miningCache        *lru.Cache
 
 	// Channel to receive header updates
 	updateCh chan *types.Header
@@ -75,6 +79,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 		log.Fatal("You must set instance name")
 	}
 	policy := policy.Start(&cfg.Proxy.Policy, backend)
+	miningCache, _ := lru.New(10)
 
 	proxy := &ProxyServer{
 		config:    cfg,
@@ -86,7 +91,8 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			nil,
 			false,
 		),
-		updateCh: make(chan *types.Header, c_updateChSize),
+		updateCh:    make(chan *types.Header, c_updateChSize),
+		miningCache: miningCache,
 	}
 	proxy.diff = util.GetTargetHex(cfg.Proxy.Difficulty)
 
@@ -113,7 +119,14 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			case <-refreshTimer.C:
 				refreshTimer.Reset(refreshIntv)
 			case newPendingHeader := <-proxy.updateCh:
-				proxy.updateBlockTemplate(newPendingHeader)
+				proxy.miningCache.ContainsOrAdd(newPendingHeader.SealHash(), newPendingHeader)
+				keys := proxy.miningCache.Keys()
+				if len(keys) > 0 {
+					value, exists := proxy.miningCache.Get(keys[rand.Intn(len(keys))])
+					if exists {
+						proxy.updateBlockTemplate(value.(*types.Header))
+					}
+				}
 			}
 		}
 	}()
