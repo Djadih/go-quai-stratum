@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bufio"
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"log"
 	"math/big"
 	"net"
-	"strings"
 
 	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
@@ -295,34 +293,6 @@ func (s *ProxyServer) broadcastNewJobs() {
 			}
 		}(m)
 	}
-}
-
-func (s *ProxyServer) submitMinedHeader(cs *Session, header *types.Header) error {
-	powHash, err := s.engine.VerifySeal(header)
-	if err != nil {
-		return fmt.Errorf("unable to verify seal of block: %#x. %v", powHash, err)
-	}
-	log.Printf("Miner submitted a block. Blockhash: %#x", header.Hash())
-	_, order, err := s.engine.CalcOrder(header)
-	if err != nil {
-		return fmt.Errorf("rejecting header: %v", err)
-	}
-
-	// Should be synchronous starting with the lowest levels.
-	log.Printf("Received a %s block", strings.ToLower(common.OrderToString(order)))
-
-	// Send mined header to the relevant go-quai nodes.
-	// Should be synchronous starting with the lowest levels.
-	for i := common.HierarchyDepth - 1; i >= order; i-- {
-		err := s.clients[i].ReceiveMinedHeader(context.Background(), header)
-		if err != nil {
-			// Header was rejected. Refresh workers to try again.
-			cs.pushNewJob(s.currentBlockTemplate().Header, s.currentBlockTemplate().Target)
-			return fmt.Errorf("rejected header: %v", err)
-		}
-	}
-
-	return nil
 }
 
 func (cs *Session) sendMessage(v any) error {

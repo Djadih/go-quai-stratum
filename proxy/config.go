@@ -45,7 +45,8 @@ type Proxy struct {
 	MaxFails    int64 `json:"maxFails"`
 	HealthCheck bool  `json:"healthCheck"`
 
-	Stratum Stratum `json:"stratum"`
+	Coinbases map[string]string `json:"coinbases"`
+	Stratum   Stratum           `json:"stratum"`
 
 	StratumNiceHash StratumNiceHash `json:"stratum_nice_hash"`
 }

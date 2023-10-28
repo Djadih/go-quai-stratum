@@ -82,6 +82,7 @@ func readConfig(cfg *proxy.Config) {
 	if *stratumPort != -1 {
 		cfg.Proxy.Stratum.Listen = "0.0.0.0:" + strconv.Itoa(*stratumPort)
 	}
+	log.Print(cfg.Proxy.Coinbases)
 }
 
 func returnPortHelper(portStr string) string {

@@ -3,24 +3,26 @@ package proxy
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/dominant-strategies/go-quai-stratum/policy"
+	"github.com/dominant-strategies/go-quai-stratum/storage"
+	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/consensus"
 	"github.com/dominant-strategies/go-quai/consensus/progpow"
 	"github.com/dominant-strategies/go-quai/core/types"
 	"github.com/dominant-strategies/go-quai/quaiclient/ethclient"
-	"github.com/gorilla/mux"
 
-	"github.com/dominant-strategies/go-quai-stratum/policy"
-	"github.com/dominant-strategies/go-quai-stratum/storage"
-	"github.com/dominant-strategies/go-quai-stratum/util"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -290,6 +292,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
 	t := s.currentBlockTemplate()
 
+	pendingHeader.SetCoinbase(common.HexToAddress(s.config.Proxy.Coinbases["cyprus2"]))
 	// Short circuit if the pending header is the same as the current one
 	if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash() {
 		return
@@ -305,4 +308,34 @@ func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
 	log.Printf("Sealhash: %#x", pendingHeader.SealHash())
 
 	go s.broadcastNewJobs()
+}
+
+func (s *ProxyServer) submitMinedHeader(cs *Session, header *types.Header) error {
+	powHash, err := s.engine.VerifySeal(header)
+	if err != nil {
+		return fmt.Errorf("unable to verify seal of block: %#x. %v", powHash, err)
+	}
+	log.Printf("Miner submitted a block. Blockhash: %#x", header.Hash())
+	_, order, err := s.engine.CalcOrder(header)
+	if err != nil {
+		return fmt.Errorf("rejecting header: %v", err)
+	}
+
+	// Should be synchronous starting with the lowest levels.
+	log.Printf("Received a %s block", strings.ToLower(common.OrderToString(order)))
+
+	log.Printf("Coinbase: %#x", header.Coinbase())
+
+	// Send mined header to the relevant go-quai nodes.
+	// Should be synchronous starting with the lowest levels.
+	for i := common.HierarchyDepth - 1; i >= order; i-- {
+		err := s.clients[i].ReceiveMinedHeader(context.Background(), header)
+		if err != nil {
+			// Header was rejected. Refresh workers to try again.
+			cs.pushNewJob(s.currentBlockTemplate().Header, s.currentBlockTemplate().Target)
+			return fmt.Errorf("rejected header: %v", err)
+		}
+	}
+
+	return nil
 }
