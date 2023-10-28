@@ -292,7 +292,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
 	t := s.currentBlockTemplate()
 
-	pendingHeader.SetCoinbase(common.HexToAddress(s.config.Proxy.Coinbases["cyprus2"]))
+	pendingHeader.SetCoinbase(common.HexToAddress(s.config.Proxy.Coinbases["hydra1"]))
 	// Short circuit if the pending header is the same as the current one
 	if t != nil && t.Header != nil && t.Header.SealHash() == pendingHeader.SealHash() {
 		return
