@@ -320,7 +320,7 @@ func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
 
 	s.blockTemplate.Store(&newTemplate)
 	s.headerCache.Add(newTemplate.JobID, newTemplate.Header)
-	log.Printf("New block to mine on %s at height %d", common.OrderToString(common.ZONE_CTX), pendingHeader.NumberArray())
+	log.Printf("New block to mine on %s at height %d", s.config.Upstream[common.ZONE_CTX].Name, pendingHeader.NumberArray())
 
 	difficultyMh := strconv.FormatUint(newTemplate.Header.Difficulty().Uint64() / 1000000, 10)
 	if len(difficultyMh) >= 3 {
@@ -334,7 +334,7 @@ func (s *ProxyServer) updateBlockTemplate(pendingHeader *types.Header) {
 func (s *ProxyServer) verifyMinedHeader(jobID uint, nonce []byte) (*types.Header, error) {
 	header, ok := s.headerCache.Get(jobID)
 	if !ok {
-		return nil, fmt.Errorf("Unable to find header for that jobID: %d", jobID)
+		return nil, fmt.Errorf("unable to find header for that jobID: %d", jobID)
 	}
 	header = types.CopyHeader(header)
 

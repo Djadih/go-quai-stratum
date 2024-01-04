@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	Name                  string        `json:"name"`
-	Proxy                 Proxy         `json:"proxy"`
-	Upstream              []Upstream    `json:"upstream"`
-	UpstreamCheckInterval string        `json:"upstreamCheckInterval"`
+	Name                  string     `json:"name"`
+	Proxy                 Proxy      `json:"proxy"`
+	Upstream              []Upstream `json:"upstream"`
+	UpstreamCheckInterval string     `json:"upstreamCheckInterval"`
 
 	Threads int `json:"threads"`
 
@@ -63,6 +63,7 @@ type StratumNiceHash struct {
 }
 
 type Upstream struct {
+	Context string `json:"context"`
 	Name    string `json:"name"`
 	Url     string `json:"url"`
 	Timeout string `json:"timeout"`

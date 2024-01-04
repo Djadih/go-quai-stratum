@@ -68,6 +68,7 @@ func readConfig(cfg *proxy.Config) {
 	}
 	if zonePort != nil && *zonePort != "" {
 		cfg.Upstream[common.ZONE_CTX].Url = "ws://127.0.0.1:" + returnPortHelper(*zonePort)
+		cfg.Upstream[common.ZONE_CTX].Name = *zonePort
 	}
 	if *stratumPort != -1 {
 		cfg.Proxy.Stratum.Listen = "0.0.0.0:" + strconv.Itoa(*stratumPort)
