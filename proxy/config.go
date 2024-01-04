@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"github.com/dominant-strategies/go-quai-stratum/api"
 	"github.com/dominant-strategies/go-quai-stratum/policy"
 	"github.com/dominant-strategies/go-quai-stratum/storage"
 	"github.com/dominant-strategies/go-quai/common/hexutil"
@@ -10,7 +9,6 @@ import (
 type Config struct {
 	Name                  string        `json:"name"`
 	Proxy                 Proxy         `json:"proxy"`
-	Api                   api.ApiConfig `json:"api"`
 	Upstream              []Upstream    `json:"upstream"`
 	UpstreamCheckInterval string        `json:"upstreamCheckInterval"`
 

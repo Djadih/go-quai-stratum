@@ -5,12 +5,8 @@ import (
 	"flag"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 
-	"github.com/J-A-M-P-S/structs"
-
-	"github.com/dominant-strategies/go-quai-stratum/api"
 	"github.com/dominant-strategies/go-quai-stratum/proxy"
 	"github.com/dominant-strategies/go-quai-stratum/storage"
 	"github.com/dominant-strategies/go-quai/common"
@@ -37,12 +33,6 @@ var portDefinitions = map[string]string{
 
 func startProxy() {
 	s := proxy.NewProxy(&cfg, backend)
-	s.Start()
-}
-
-func startApi() {
-	settings := structs.Map(&cfg)
-	s := api.NewApiServer(&cfg.Api, settings, backend)
 	s.Start()
 }
 
@@ -100,18 +90,9 @@ func init() {
 func main() {
 	readConfig(&cfg)
 
-	if cfg.Threads > 0 {
-		runtime.GOMAXPROCS(cfg.Threads)
-		log.Printf("Running with %v threads", cfg.Threads)
-	}
-
 	if cfg.Proxy.Enabled {
 		go startProxy()
 	}
-	if cfg.Api.Enabled {
-		go startApi()
-	}
-
 	quit := make(chan bool)
 	<-quit
 }
