@@ -1,10 +1,9 @@
 {
-	"threads": 4,
-	"coin": "etc",
+	"coin": "quai",
 	"name": "main",
-	"network": "classic",
+	"network": "colosseum",
 	
-	"avgBlockTime": 14.4,
+	"avgBlockTime": 12,
 	"blockTimeWindow": 300,
 
 	"proxy": {
@@ -49,23 +48,6 @@
 				"limitJump": 10
 			}
 		}
-	},
-
-	"api": {
-		"enabled": false,
-		"purgeOnly": false,
-		"purgeInterval": "10m",
-		"listen": "0.0.0.0:30300",
-		"statsCollectInterval": "5s",
-		"hashrateWindow": "30m",
-		"hashrateLargeWindow": "3h",
-		"luckWindow": [64, 128, 256],
-		"payments": 30,
-		"blocks": 50,
-		"poolCharts":"0 */20 * * * *",
-		"poolChartsNum":74,
-		"minerCharts":"0 */20 * * * *",
-		"minerChartsNum":74
 	},
 
 	"upstreamCheckInterval": "5s",
