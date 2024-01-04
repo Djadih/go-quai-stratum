@@ -83,6 +83,10 @@ func returnPortHelper(portStr string) string {
 	return portStr
 }
 
+func startStatsCollection() {
+
+}
+
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(os.Stdout)
@@ -94,6 +98,9 @@ func main() {
 	if cfg.Proxy.Enabled {
 		go startProxy()
 	}
+
+	startStatsCollection()
+
 	quit := make(chan bool)
 	<-quit
 }
