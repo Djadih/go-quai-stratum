@@ -9,8 +9,8 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,6 +23,7 @@ import (
 	"github.com/dominant-strategies/go-quai/consensus/progpow"
 	"github.com/dominant-strategies/go-quai/core/types"
 	"github.com/dominant-strategies/go-quai/quaiclient/ethclient"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/mux"
 	lru "github.com/hashicorp/golang-lru/v2/expirable"
@@ -94,6 +95,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 			progpow.Config{},
 			nil,
 			false,
+			logrus.New(),
 		),
 		updateCh:    make(chan *types.Header, c_updateChSize),
 		headerCache: lru.NewLRU[uint, *types.Header](10, nil, 600*time.Second),
