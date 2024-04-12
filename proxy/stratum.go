@@ -258,7 +258,7 @@ func (cs *Session) pushNewJob(template *BlockTemplate) error {
 		Method: "mining.notify",
 		Params: []string{
 			fmt.Sprintf("%x", template.JobID),
-			fmt.Sprintf("%x", template.Header.Number(common.ZONE_CTX)),
+			fmt.Sprintf("%x", template.Header.Number(common.PRIME_CTX)),
 			fmt.Sprintf("%x", template.Header.SealHash()),
 			"0",
 		},
