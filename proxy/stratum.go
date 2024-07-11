@@ -253,10 +253,7 @@ func (cs *Session) sendTCPError(err error) {
 // func (cs *Session) pushNewJob(header *types.Header, target *big.Int) error {
 func (cs *Session) pushNewJob(template *BlockTemplate) error {
 	// Update target to worker.
-	doOnce := func() {
-		cs.setMining(template)
-	}
-	cs.once.Do(doOnce)
+	cs.setMining(template)
 
 	notification := Notification{
 		Method: "mining.notify",

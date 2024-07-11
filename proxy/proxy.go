@@ -64,9 +64,8 @@ type jobDetails struct {
 }
 
 type Session struct {
-	ip   string
-	enc  *json.Encoder
-	once sync.Once
+	ip  string
+	enc *json.Encoder
 
 	// Stratum
 	sync.Mutex
