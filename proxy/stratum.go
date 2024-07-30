@@ -12,6 +12,7 @@ import (
 
 	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/consensus/progpow"
 )
 
 const (
@@ -283,15 +284,33 @@ func (cs *Session) pushNewJob(template *BlockTemplate) error {
 	// Update target to worker.
 	cs.setMining(common.BytesToHash(template.Target.Bytes()))
 
-	notification := Notification{
-		Method: "mining.notify",
-		Params: []string{
-			fmt.Sprintf("%x", template.JobID),
-			fmt.Sprintf("%x", template.WorkObject.Number(common.ZONE_CTX)),
-			fmt.Sprintf("%x", template.WorkObject.SealHash()),
-			"0",
-		},
+	var notification Notification
+	switch cs.protoVersion {
+	case Stratum1:
+		notification = Notification{
+			Method: "mining.notify",
+			Params: []string{
+				// First param is job ID in hex
+				fmt.Sprintf("%x", template.JobID),
+				// Second param is seed hash in hex
+				fmt.Sprintf("%x", progpow.SeedHash(template.WorkObject.PrimeTerminusNumber().Uint64())),
+				// Third param is header hash in hex
+				fmt.Sprintf("%x", template.WorkObject.SealHash()),
+			},
+		}
+	case Stratum2:
+		notification = Notification{
+			Method: "mining.notify",
+			Params: []string{
+				fmt.Sprintf("%x", template.JobID),
+				fmt.Sprintf("%x", template.WorkObject.Number(common.ZONE_CTX)),
+				fmt.Sprintf("%x", template.WorkObject.SealHash()),
+				"0",
+			},
+		}
 	}
+	log.Printf("Notified miner")
+
 	return cs.sendMessage(&notification)
 }
 
