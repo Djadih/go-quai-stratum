@@ -60,9 +60,9 @@ func (s *ProxyServer) ListenTCP() {
 		}
 		n += 1
 		cs := &Session{
-			conn:       conn,
-			ip:         ip,
-			Extranonce: fmt.Sprintf("%x", s.rng.Intn(0xffff)),
+			conn: conn,
+			ip:   ip,
+			// Extranonce: fmt.Sprintf("%x", s.rng.Intn(0xffff)),
 		}
 
 		accept <- n
@@ -210,7 +210,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 			return cs.sendMessage(&errorResponse)
 		}
 
-		nonceStr := cs.Extranonce + req.Params.([]interface{})[1].(string)
+		nonceStr := req.Params.([]interface{})[1].(string)
 		nonce, err := hex.DecodeString(nonceStr)
 		if err != nil {
 			log.Printf("Error decoding nonce: %v", err)
@@ -329,10 +329,10 @@ func (s *ProxyServer) removeSession(cs *Session) {
 func (cs *Session) setMining(target common.Hash) error {
 	notification := Notification{
 		Params: map[string]interface{}{
-			"epoch":      "",
-			"target":     target.Hex()[2:],
-			"algo":       "ethash",
-			"extranonce": cs.Extranonce,
+			"epoch":  "",
+			"target": target.Hex()[2:],
+			"algo":   "ethash",
+			// "extranonce": cs.Extranonce,
 		},
 	}
 
