@@ -18,6 +18,13 @@ const (
 	c_Max_Req_Size = 4096
 )
 
+type ProtocolVersion int
+
+const (
+	Stratum1 ProtocolVersion = iota
+	Stratum2
+)
+
 func (s *ProxyServer) ListenTCP() {
 	timeout := util.MustParseDuration(s.config.Proxy.Stratum.Timeout)
 	s.timeout = timeout
@@ -146,6 +153,26 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 		return nil
 
 	case "mining.subscribe":
+		// Check if one of the acceptable stratum formats
+		if req.Params == nil {
+			return fmt.Errorf("missing subscribe params")
+		}
+		params, ok := req.Params.([]interface{})
+		if !ok {
+			return fmt.Errorf("subscribe params not an array")
+		}
+		if len(params) < 1 {
+			return fmt.Errorf("missing subscribe params")
+		}
+		switch params[1] {
+		case "EthereumStratum/2.0.0":
+			cs.protoVersion = Stratum2
+		case "EthereumStratum/1.0.0":
+			cs.protoVersion = Stratum1
+		default:
+			return fmt.Errorf("unsupported stratum version")
+		}
+
 		response := Response{
 			ID:     req.Id,
 			Result: "s-12345",

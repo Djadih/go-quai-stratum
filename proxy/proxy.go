@@ -74,6 +74,7 @@ type Session struct {
 	subscriptionID string
 	Extranonce     string
 	JobDetails     jobDetails
+	protoVersion   ProtocolVersion
 }
 
 type SliceClients [common.HierarchyDepth]*quaiclient.Client
