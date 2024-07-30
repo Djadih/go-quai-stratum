@@ -165,10 +165,12 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *Request) error {
 			return fmt.Errorf("missing subscribe params")
 		}
 		switch params[1] {
-		case "EthereumStratum/2.0.0":
-			cs.protoVersion = Stratum2
 		case "EthereumStratum/1.0.0":
 			cs.protoVersion = Stratum1
+			log.Printf("Stratum1 client connected")
+		case "EthereumStratum/2.0.0":
+			cs.protoVersion = Stratum2
+			log.Printf("Stratum2 client connected")
 		default:
 			return fmt.Errorf("unsupported stratum version")
 		}
