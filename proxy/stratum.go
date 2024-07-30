@@ -290,6 +290,7 @@ func (cs *Session) setMining(template *BlockTemplate) error {
 			"extranonce": cs.Extranonce,
 		},
 	}
+	log.Printf("Set mining: %s", notification)
 	return cs.sendMessage(&notification)
 }
 
