@@ -50,6 +50,8 @@ type ProxyServer struct {
 	// Keep track of previous headers
 	woCache *lru.LRU[uint, *types.WorkObject]
 
+	blockNumber uint
+
 	// Stratum
 	sessionsMu sync.RWMutex
 	sessions   map[*Session]struct{}
@@ -74,6 +76,7 @@ type Session struct {
 	subscriptionID string
 	Extranonce     string
 	JobDetails     jobDetails
+	blockNumber    uint64
 }
 
 type SliceClients [common.HierarchyDepth]*quaiclient.Client
@@ -110,6 +113,10 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	refreshTimer := time.NewTimer(refreshIntv)
 	log.Global.Printf("Set block refresh every %v", refreshIntv)
 
+	pushJobTimer := time.NewTimer(util.MustParseDuration("3s"))
+
+	proxy.blockNumber = 29990
+
 	proxy.fetchBlockTemplate()
 
 	if cfg.Proxy.Stratum.Enabled {
@@ -125,6 +132,9 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 				refreshTimer.Reset(refreshIntv)
 			case newPendingHeader := <-proxy.updateCh:
 				proxy.updateBlockTemplate(newPendingHeader)
+			case <-pushJobTimer.C:
+				go proxy.broadcastNewJobs()
+				pushJobTimer.Reset(util.MustParseDuration("3s"))
 			}
 		}
 	}()
@@ -252,6 +262,10 @@ func (s *ProxyServer) fetchBlockTemplate() {
 
 func (s *ProxyServer) updateBlockTemplate(pendingWo *types.WorkObject) {
 	t := s.currentBlockTemplate()
+	s.blockNumber += 1
+	if t != nil {
+		t.tempNumber = s.blockNumber
+	}
 
 	// Short circuit if the pending header is the same as the current one
 	if t != nil && t.WorkObject != nil && t.WorkObject.WorkObjectHeader() != nil && t.WorkObject.WorkObjectHeader().SealHash() == pendingWo.SealHash() {

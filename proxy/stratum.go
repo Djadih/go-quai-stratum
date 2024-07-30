@@ -12,7 +12,6 @@ import (
 
 	"github.com/dominant-strategies/go-quai-stratum/util"
 	"github.com/dominant-strategies/go-quai/common"
-	"github.com/dominant-strategies/go-quai/consensus/progpow"
 )
 
 const (
@@ -284,13 +283,14 @@ func (cs *Session) setMining(template *BlockTemplate) error {
 	notification := Notification{
 		Method: "mining.set",
 		Params: map[string]interface{}{
-			"epoch":      fmt.Sprintf("%x", int(template.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength)),
+			"epoch":      fmt.Sprintf("%x", template.tempNumber/30000),
 			"target":     common.BytesToHash(template.Target.Bytes()).Hex()[2:],
 			"algo":       "progpow",
 			"extranonce": cs.Extranonce,
 		},
 	}
 	log.Printf("Set mining: %s", notification)
+	log.Printf("Tempnumber: %d", template.tempNumber)
 	return cs.sendMessage(&notification)
 }
 
