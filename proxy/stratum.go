@@ -309,7 +309,6 @@ func (s *ProxyServer) removeSession(cs *Session) {
 
 func (cs *Session) setMining(target common.Hash) error {
 	notification := Notification{
-		Method: "mining.set",
 		Params: map[string]interface{}{
 			"epoch":      "",
 			"target":     target.Hex()[2:],
@@ -317,6 +316,14 @@ func (cs *Session) setMining(target common.Hash) error {
 			"extranonce": cs.Extranonce,
 		},
 	}
+
+	switch cs.protoVersion {
+	case Stratum1:
+		notification.Method = "mining.set_difficulty"
+	case Stratum2:
+		notification.Method = "mining.set"
+	}
+
 	return cs.sendMessage(&notification)
 }
 
