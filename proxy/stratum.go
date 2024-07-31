@@ -296,6 +296,7 @@ func (cs *Session) pushNewJob(template *BlockTemplate) error {
 				fmt.Sprintf("%x", progpow.SeedHash(template.WorkObject.PrimeTerminusNumber().Uint64())),
 				// Third param is header hash in hex
 				fmt.Sprintf("%x", template.WorkObject.SealHash()),
+				"0",
 			},
 		}
 	case Stratum2:
