@@ -255,7 +255,8 @@ func (cs *Session) pushNewJob(template *BlockTemplate) error {
 		Method: "mining.notify",
 		Params: []string{
 			fmt.Sprintf("%x", template.JobID),
-			fmt.Sprintf("%x", template.WorkObject.PrimeTerminusNumber().Uint64()),
+			// fmt.Sprintf("%x", template.WorkObject.PrimeTerminusNumber().Uint64()),
+			fmt.Sprintf("%x", template.WorkObject.NumberU64(common.ZONE_CTX)),
 			fmt.Sprintf("%x", template.WorkObject.SealHash()),
 			"0",
 		},
@@ -280,7 +281,8 @@ func (cs *Session) setMining(template *BlockTemplate) error {
 	notification := Notification{
 		Method: "mining.set",
 		Params: map[string]interface{}{
-			"epoch":      fmt.Sprintf("%x", int(template.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength)),
+			// "epoch":      fmt.Sprintf("%x", int(template.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength)),
+			"epoch":      fmt.Sprintf("%x", int(template.WorkObject.NumberU64(common.ZONE_CTX)/progpow.C_epochLength)),
 			"target":     common.BytesToHash(template.Target.Bytes()).Hex()[2:],
 			"algo":       "progpow",
 			"extranonce": cs.Extranonce,
