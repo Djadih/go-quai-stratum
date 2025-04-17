@@ -10,7 +10,6 @@ require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230222175239-ea21e114f25c
 	github.com/J-A-M-P-S/structs v1.1.0
 	github.com/dominant-strategies/go-quai v0.44.0
-	github.com/google/go-github/v71 v71.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/robfig/cron v1.2.0
@@ -48,7 +47,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -125,6 +124,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/bsm/ratelimit.v1 v1.0.0-20170922094635-f56db5e73a5e // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20210326210528-650f7c854440 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
