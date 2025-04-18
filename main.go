@@ -48,6 +48,9 @@ func startApi() {
 	s.Start()
 }
 
+//go:embed config/config.example.json
+var embedConfig embed.FS
+
 func readConfig(cfg *proxy.Config) {
 	configPath := flag.String("config", "config/config.json", "Path to config file")
 	zoneUrl := flag.String("zone", "", "Zone upstream port (overrides config)")
@@ -61,6 +64,9 @@ func readConfig(cfg *proxy.Config) {
 	qiCoinbase := flag.String("qiCoinbase", "", "")
 	minerPreference := flag.Float64("minerPreference", 0.5, "")
 
+	// GPU miner flags for pass through
+	apiBind := flag.String("api-bind", "127.0.0.1:4068", "")
+
 	flag.Parse()
 
 	log.Global.WithField(
@@ -68,9 +74,20 @@ func readConfig(cfg *proxy.Config) {
 	).Info("Loading config")
 
 	// Read config file.
-	configFile, err := os.Open(*configPath)
+	var configFile *os.File
+	var err error
+	configFile, err = os.Open(*configPath)
 	if err != nil {
-		log.Global.Fatal("File error: ", err.Error())
+		// Try the example file for the stratum miner.
+		configPath := "config/config.example.json"
+		configFile, err = os.Open(configPath)
+		if err != nil {
+			// Try the embedded version
+			configFile, err = readEmbedFile(embedConfig, configPath)
+			if err != nil {
+				log.Global.Fatal("File error: ", err.Error())
+			}
+		}
 	}
 	defer configFile.Close()
 	jsonParser := json.NewDecoder(configFile)
@@ -104,6 +121,11 @@ func readConfig(cfg *proxy.Config) {
 		cfg.Proxy.MinerPreference = *minerPreference
 	}
 
+	// Pass through the miner flags to the config.
+	if apiBind != nil && *apiBind != "" {
+		cfg.Mining.ApiBind = *apiBind
+	}
+
 	// Perform custom overrides. Default means they weren't set on the command line.
 	if zoneUrl != nil && *zoneUrl != "" {
 		cfg.Upstream.Name = "cyprus1"
@@ -112,6 +134,35 @@ func readConfig(cfg *proxy.Config) {
 	if *stratumPort != -1 {
 		cfg.Proxy.Stratum.Listen = "0.0.0.0:" + strconv.Itoa(*stratumPort)
 	}
+}
+
+func readEmbedFile(embedConfig embed.FS, path string) (*os.File, error) {
+	data, err := embedConfig.ReadFile("config/config.example.json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a temporary file
+	tempFile, err := os.CreateTemp("", "config.example.json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Write the embedded file content to the temporary file
+	if _, err := tempFile.Write(data); err != nil {
+		tempFile.Close()
+		os.Remove(tempFile.Name())
+		return nil, err
+	}
+
+	// Seek to the beginning of the file for reading
+	if _, err := tempFile.Seek(0, 0); err != nil {
+		tempFile.Close()
+		os.Remove(tempFile.Name())
+		return nil, err
+	}
+
+	return tempFile, nil
 }
 
 func returnPortHelper(locName string) string {
@@ -175,7 +226,7 @@ func startGpuMiner(config proxy.Config) {
 		gpuFlag = "-G"
 	}
 
-	minerManager.cmd = exec.Command(binaryPath, gpuFlag, "-P", "stratum://"+config.Proxy.Stratum.Listen)
+	minerManager.cmd = exec.Command(binaryPath, gpuFlag, "-P", "stratum://"+config.Proxy.Stratum.Listen, "--api-bind", config.Mining.ApiBind)
 	if err := minerManager.cmd.Start(); err != nil {
 		log.Global.Warnf("Failed to start GPU miner: %v", err)
 		return

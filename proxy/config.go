@@ -61,6 +61,7 @@ type Proxy struct {
 type Mining struct {
 	GpuType string `json:"gpuType"`
 	Enabled bool   `json:"enabled"`
+	ApiBind string `json:"apiBind"`
 }
 
 type Stratum struct {
