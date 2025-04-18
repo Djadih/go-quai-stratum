@@ -306,10 +306,12 @@ func (s *ProxyServer) updateBlockTemplate(pendingWo *types.WorkObject) {
 }
 
 func (s *ProxyServer) updateCustomSealTemplate(workShareUpdate *quai.WorkShareUpdate) {
-	threshold, err := consensus.CalcWorkShareThreshold(workShareUpdate.Difficulty, int(s.threshold))
-	if err != nil {
-		log.Global.WithField("err", err).Error("Error with the provided workshare difficulty or threshold")
-	}
+	// threshold, err := consensus.CalcWorkShareThreshold(workShareUpdate.Difficulty, int(s.threshold))
+	// if err != nil {
+	// 	log.Global.WithField("err", err).Error("Error with the provided workshare difficulty or threshold")
+	// }
+
+	threshold := consensus.DifficultyToTarget(workShareUpdate.Difficulty)
 
 	newTemplate := &BlockTemplate{
 		CustomSeal:          workShareUpdate.SealHash,
