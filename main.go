@@ -21,6 +21,7 @@ import (
 	"github.com/dominant-strategies/go-quai-stratum/util"
 
 	"github.com/dominant-strategies/go-quai/cmd/utils"
+	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/log"
 )
 
@@ -55,6 +56,11 @@ func readConfig(cfg *proxy.Config) {
 
 	gpuType := flag.String("gpuType", "", "Gpu type either (nvidia/amd)")
 
+	// Flags for Seal Mining
+	quaiCoinbase := flag.String("quaiCoinbase", "", "")
+	qiCoinbase := flag.String("qiCoinbase", "", "")
+	minerPreference := flag.Float64("minerPreference", 0.5, "")
+
 	flag.Parse()
 
 	log.Global.WithField(
@@ -75,6 +81,27 @@ func readConfig(cfg *proxy.Config) {
 	if gpuType != nil && *gpuType != "" {
 		cfg.Mining.Enabled = true
 		cfg.Mining.GpuType = *gpuType
+	}
+
+	if quaiCoinbase != nil && *quaiCoinbase != "" {
+		if !common.IsHexAddress(*quaiCoinbase) {
+			log.Global.WithField("quaiCoinbase", *quaiCoinbase).Fatal("Invalid quaiCoinbase")
+		}
+		cfg.Proxy.QuaiCoinbase = common.HexToAddress(*quaiCoinbase, common.Location{0, 0})
+	}
+
+	if qiCoinbase != nil && *qiCoinbase != "" {
+		if !common.IsHexAddress(*qiCoinbase) {
+			log.Global.WithField("qiCoinbase", *qiCoinbase).Fatal("Invalid qiCoinbase")
+		}
+		cfg.Proxy.QiCoinbase = common.HexToAddress(*qiCoinbase, common.Location{0, 0})
+	}
+
+	if minerPreference != nil {
+		if *minerPreference < 0 || *minerPreference > 1 {
+			log.Global.WithField("minerPreference", *minerPreference).Fatal("Invalid minerPreference")
+		}
+		cfg.Proxy.MinerPreference = *minerPreference
 	}
 
 	// Perform custom overrides. Default means they weren't set on the command line.
