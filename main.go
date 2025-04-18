@@ -49,7 +49,7 @@ func startApi() {
 
 func readConfig(cfg *proxy.Config) {
 	configPath := flag.String("config", "config/config.json", "Path to config file")
-	zonePort := flag.String("zone", "", "Zone upstream port (overrides config)")
+	zoneUrl := flag.String("zone", "", "Zone upstream port (overrides config)")
 
 	stratumPort := flag.Int("stratum", -1, "Stratum listen port (overrides config)")
 
@@ -78,11 +78,9 @@ func readConfig(cfg *proxy.Config) {
 	}
 
 	// Perform custom overrides. Default means they weren't set on the command line.
-	if zonePort != nil && *zonePort != "" {
-		cfg.Upstream.Name = *zonePort
-		if cfg.Upstream.Url == "" {
-			cfg.Upstream.Url = "ws://127.0.0.1:" + returnPortHelper(*zonePort)
-		}
+	if zoneUrl != nil && *zoneUrl != "" {
+		cfg.Upstream.Name = "cyprus1"
+		cfg.Upstream.Url = *zoneUrl
 	}
 	if *stratumPort != -1 {
 		cfg.Proxy.Stratum.Listen = "0.0.0.0:" + strconv.Itoa(*stratumPort)
