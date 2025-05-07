@@ -133,8 +133,6 @@ github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/dominant-strategies/bn256 v0.0.0-20250117181620-a3c0ff77c445 h1:AQ0Od0JBZbdT/U1Qu8NNIAEo3dxVCayCHO3sFCmdpSk=
 github.com/dominant-strategies/bn256 v0.0.0-20250117181620-a3c0ff77c445/go.mod h1:ldZpUYGUtD9ZvZmaQKYEbh1DTH8aNzCWDE90YCAlmvc=
-github.com/dominant-strategies/go-quai v0.44.0 h1:r/stuajyW8nrfttlLZVYF/MM7Xcxtc12Rd/WurC5Ans=
-github.com/dominant-strategies/go-quai v0.44.0/go.mod h1:kRbuukCU1/WGhO40EB+lA43zle3XoOhPwxmXgiuBbkg=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dvyukov/go-fuzz v0.0.0-20210103155950-6a8e9d1f2415/go.mod h1:11Gm+ccJnvAhCNLlf5+cS9KjtbaD5I5zaZpFMsTHWTw=
 github.com/edsrzf/mmap-go v1.1.0 h1:6EUwBLQ/Mcr1EYLE4Tn1VdW1A4ckqCQWZBw8Hr0kjpQ=
@@ -1004,6 +1002,8 @@ gopkg.in/ini.v1 v1.67.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
 gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=
 gopkg.in/natefinch/lumberjack.v2 v2.2.1 h1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=
 gopkg.in/natefinch/lumberjack.v2 v2.2.1/go.mod h1:YD8tP3GAjkrDg1eZH7EGmyESg/lsYskCTPBJVb9jqSc=
+gopkg.in/olebedev/go-duktape.v3 v3.0.0-20210326210528-650f7c854440 h1:SxFAMd+8zfpL/Rk4pgdb8leeZDiL3M/gCWCbBvmLkoE=
+gopkg.in/olebedev/go-duktape.v3 v3.0.0-20210326210528-650f7c854440/go.mod h1:uAJfkITjFhyEEuUfm7bsmCZRbW5WRq8s9EY8HZ6hCns=
 gopkg.in/redis.v3 v3.6.4 h1:u7XgPH1rWwsdZnR+azldXC6x9qDU2luydOIeU/l52fE=
 gopkg.in/redis.v3 v3.6.4/go.mod h1:6XeGv/CrsUFDU9aVbUdNykN7k1zVmoeg83KC9RbQfiU=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 h1:uRGJdciOHaEIrze2W8Q3AKkepLTh2hOroT7a+7czfdQ=

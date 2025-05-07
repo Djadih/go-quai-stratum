@@ -4,6 +4,8 @@ go 1.23.2
 
 toolchain go1.23.5
 
+replace github.com/dominant-strategies/go-quai => ../go-quai
+
 require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230222175239-ea21e114f25c
 	github.com/J-A-M-P-S/structs v1.1.0
@@ -121,6 +123,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/bsm/ratelimit.v1 v1.0.0-20170922094635-f56db5e73a5e // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20210326210528-650f7c854440 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
