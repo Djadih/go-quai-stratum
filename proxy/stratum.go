@@ -312,15 +312,17 @@ func (s *ProxyServer) removeSession(cs *Session) {
 
 // func (cs *Session) setMining(target common.Hash) error {
 func (cs *Session) setMining(template *BlockTemplate) error {
+	epoch := fmt.Sprintf("%x", int(template.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength))
 	notification := Notification{
 		Method: "mining.set",
 		Params: map[string]interface{}{
-			"epoch":      fmt.Sprintf("%x", int(template.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength)),
+			"epoch":      epoch,
 			"target":     common.BytesToHash(template.Target.Bytes()).Hex()[2:],
 			"algo":       "progpow",
 			"extranonce": cs.Extranonce,
 		},
 	}
+	log.Global.WithField("epoch", epoch).Print("Setting mining")
 	return cs.sendMessage(&notification)
 }
 
@@ -335,6 +337,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 
 	count := len(s.sessions)
 	log.Global.Printf("Broadcasting block %d to %d stratum miners", t.WorkObject.NumberU64(common.ZONE_CTX), count)
+	log.Global.WithField("Epoch", t.WorkObject.PrimeTerminusNumber().Uint64()/progpow.C_epochLength).Info("Broadcasting new job")
 
 	bcast := make(chan int, 1024)
 	n := 0
